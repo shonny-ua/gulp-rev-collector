@@ -7,7 +7,10 @@
     "type": "git",
     "url": "https://github.com/shonny-ua/gulp-rev-collector"
   },
-  "author": "Oleksandr Ovcharenko <shonny.ua@gmail.com>",
+  "author": {
+    "name": "Oleksandr Ovcharenko",
+    "email": "shonny.ua@gmail.com"
+  },
   "main": "index.js",
   "files": [
     "index.js"
