@@ -4,6 +4,8 @@ var PluginError = gutil.PluginError;
 var through     = require('through2');
 var path        = require('path');
 
+var PLUGIN_NAME = 'gulp-rev-collector';
+
 function revCollector() {
     var manifest  = {};
     var templates = [];
@@ -15,7 +17,7 @@ function revCollector() {
                 try {
                     json = JSON.parse(file.contents.toString('utf8'))
                 } catch (x) {
-                    // TODO log catched throw
+                    this.emit('error', new PluginError(PLUGIN_NAME,  x));
                 }
                 _.extend( manifest, json );
             } else if (ext === '.html') {
