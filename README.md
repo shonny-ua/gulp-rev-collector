@@ -1,4 +1,4 @@
-# [gulp](https://github.com/wearefractal/gulp)-rev-collector
+# [gulp](https://github.com/wearefractal/gulp)-rev-collector [![Build Status](https://travis-ci.org/shonny-ua/gulp-rev-collector.svg?branch=master)](https://travis-ci.org/shonny-ua/gulp-rev-collector)
 
 > Static asset revision data collector from manifests, with was generated from different streams and replace they's links in html template.
 
