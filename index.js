@@ -8,7 +8,7 @@ var PLUGIN_NAME = 'gulp-rev-collector';
 
 function revCollector() {
     var manifest  = {};
-    var templates = [];
+    var mutables = [];
     return through.obj(function (file, enc, cb) {
         if (!file.isNull()) {
             var ext = path.extname(file.path);
@@ -20,13 +20,13 @@ function revCollector() {
                     this.emit('error', new PluginError(PLUGIN_NAME,  x));
                 }
                 _.extend( manifest, json );
-            } else if (ext === '.html') {
-                templates.push(file);
+            } else if (~['.js', '.css', '.html', '.htm', '.phtml', '.shtml', '.php'].indexOf(ext)) {
+                mutables.push(file);
             }
         }
         cb();
     }, function (cb) {
-        templates.forEach(function (file){
+        mutables.forEach(function (file){
             if (!file.isNull()) {
                 var src = file.contents.toString('utf8');
                 for (var k in manifest) {
