@@ -10,7 +10,6 @@ var htmlFileBody    = '<html><head><link rel="stylesheet" href="/css/style.css" 
 
 it('should replace links in .html file', function (cb) {
     var stream = revCollector();
-    //console.log(stream);
     var fileCount = 0;
 
     stream.write(new gutil.File({

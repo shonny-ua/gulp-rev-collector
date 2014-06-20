@@ -1,4 +1,9 @@
-# [gulp](https://github.com/wearefractal/gulp)-rev-collector [![Build Status](https://travis-ci.org/shonny-ua/gulp-rev-collector.svg?branch=master)](https://travis-ci.org/shonny-ua/gulp-rev-collector)
+[![Build Status](https://travis-ci.org/shonny-ua/gulp-rev-collector.svg)](https://travis-ci.org/shonny-ua/gulp-rev-collector)
+[![Dependencies](https://david-dm.org/shonny-ua/gulp-rev-collector.svg)](https://david-dm.org/shonny-ua/gulp-rev-collector)
+[![devDependencies](https://david-dm.org/shonny-ua/gulp-rev-collector/dev-status.svg)](https://david-dm.org/shonny-ua/gulp-rev-collector#info=devDependencies&view=table)
+[![NPM version](https://badge.fury.io/js/gulp-rev-collector.svg)](http://badge.fury.io/js/gulp-rev-collector)
+
+# [gulp](https://github.com/wearefractal/gulp)-rev-collector
 
 > Static asset revision data collector from manifests, with was generated from different streams and replace they's links in html template.
 
