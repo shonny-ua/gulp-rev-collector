@@ -31,7 +31,8 @@ function revCollector() {
             if (!file.isNull()) {
                 var src = file.contents.toString('utf8');
                 for (var k in manifest) {
-                    src = src.replace(k, manifest[k]);
+                    var re = new RegExp(find, 'g');
+                    src = src.replace(re, manifest[k]);
                 }
                 file.contents = new Buffer(src);
             }
