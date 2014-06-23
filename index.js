@@ -27,16 +27,25 @@ function revCollector() {
         }
         cb();
     }, function (cb) {
+        var changes = [];
+        for (var k in manifest) {
+            changes.push({
+                regexp: new RegExp( k.replace(/[\-\[\]\{\}\(\)\*\+\?\.\^\$\|]/g, "\\$&"), 'g' ),
+                replacement: manifest[k]
+            });
+        }
+
         mutables.forEach(function (file){
             if (!file.isNull()) {
                 var src = file.contents.toString('utf8');
-                for (var k in manifest) {
-                    src = src.replace(k, manifest[k]);
-                }
+                changes.forEach(function (r) {
+                    src = src.replace(r.regexp, r.replacement);
+                });
                 file.contents = new Buffer(src);
             }
             this.push(file);
         }, this);
+        
         cb();
     });
 }
