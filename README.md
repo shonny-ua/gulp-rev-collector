@@ -5,6 +5,8 @@
 
 # [gulp](https://github.com/wearefractal/gulp)-rev-collector
 
+[![NPM](https://nodei.co/npm/gulp-rev-collector.png?downloads=true&stars=true)](https://nodei.co/npm/gulp-rev-collector/)
+
 > Static asset revision data collector from manifests, with was generated from different streams and replace they's links in html template.
 
 ## Install
