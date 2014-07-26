@@ -21,7 +21,7 @@ function revCollector() {
                     this.emit('error', new PluginError(PLUGIN_NAME,  x));
                 }
                 _.extend( manifest, json );
-            } else if (~['.js', '.css', '.html', '.htm', '.phtml', '.shtml', '.php'].indexOf(ext)) {
+            } else if (~['.js', '.css', '.html', '.htm', '.phtml', '.shtml', '.php', '.erb'].indexOf(ext)) {
                 mutables.push(file);
             }
         }
