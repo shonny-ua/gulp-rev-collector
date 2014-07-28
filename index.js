@@ -21,18 +21,33 @@ function revCollector() {
                     this.emit('error', new PluginError(PLUGIN_NAME,  x));
                 }
                 _.extend( manifest, json );
-            } else if (~['.js', '.css', '.html', '.htm', '.phtml', '.shtml', '.php', '.erb'].indexOf(ext)) {
+            } else {
                 mutables.push(file);
             }
         }
         cb();
     }, function (cb) {
-        var changes = [];
+        var changes = [],
+            escChars = /[\-\[\]\{\}\(\)\*\+\?\.\^\$\|]/g,
+            repChars = "\\$&";
+    
         for (var k in manifest) {
-            changes.push({
-                regexp: new RegExp( k.replace(/[\-\[\]\{\}\(\)\*\+\?\.\^\$\|]/g, "\\$&"), 'g' ),
-                replacement: manifest[k]
-            });
+    
+          var file, ext, base, url, dir, search, regex;
+    
+          file = path.basename(k).split("?")[0];
+          ext = path.extname(k).split("?")[0];
+          base = file.split(ext)[0].replace( escChars, repChars );
+          url = k.split( file );
+          dir = url[0].replace( escChars, repChars );
+          search = url[1].replace( escChars, repChars );
+    
+          regex = dir + base + "(-[0-9a-f]{8})?\\" + ext + search
+    
+          changes.push({
+            regexp: new RegExp( regex, "g" ),
+            replacement: manifest[k]
+          });
         }
 
         mutables.forEach(function (file){
