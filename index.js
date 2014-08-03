@@ -7,6 +7,8 @@ var path        = require('path');
 
 var PLUGIN_NAME = 'gulp-rev-collector';
 
+var revSuffixRX = /-[0-9a-f]{8}-?/;
+
 function _getManifestData(file) {
     var data;
     var ext = path.extname(file.path);
@@ -21,7 +23,7 @@ function _getManifestData(file) {
         if (_.isObject(json)) {
             var isRev = 1;
             Object.keys(json).forEach(function (key) {
-                if ( path.basename(json[key]).replace(/-[0-9a-f]{8}-?/, '' ) !==  path.basename(key) ) {
+                if ( path.basename(json[key]).replace(revSuffixRX, '' ) !==  path.basename(key) ) {
                     isRev = 0;
                 }
             });
@@ -35,7 +37,11 @@ function _getManifestData(file) {
     return data;
 }
 
-function revCollector() {
+function revCollector(opts) {
+    if (!opts) {
+        opts = {};
+    }
+    
     var manifest  = {};
     var mutables = [];
     return through.obj(function (file, enc, cb) {
