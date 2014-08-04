@@ -1,13 +1,14 @@
 'use strict';
-var _           = require('underscore');
-var gutil       = require('gulp-util');
-var PluginError = gutil.PluginError;
-var through     = require('through2');
-var path        = require('path');
+var _            = require('underscore');
+var gutil        = require('gulp-util');
+var PluginError  = gutil.PluginError;
+var through      = require('through2');
+var path         = require('path');
 
-var PLUGIN_NAME = 'gulp-rev-collector';
+var PLUGIN_NAME  = 'gulp-rev-collector';
 
-var revSuffixRX = /-[0-9a-f]{8}-?/;
+var revSuffixStr = '-[0-9a-f]{8}-?';
+var revSuffixRX  = new RegExp( revSuffixStr );
 
 function _getManifestData(file) {
     var data;
@@ -37,6 +38,14 @@ function _getManifestData(file) {
     return data;
 }
 
+function escPathPattern(pattern) {
+    return pattern.replace(/[\-\[\]\{\}\(\)\*\+\?\.\^\$\|\/\\]/g, "\\$&");
+}
+
+function closeDirBySep(dirname) {
+    return dirname + (!dirname || new RegExp( escPathPattern(path.sep) + '$' ).test(dirname) ? '' : path.sep);
+}
+
 function revCollector(opts) {
     if (!opts) {
         opts = {};
@@ -56,11 +65,39 @@ function revCollector(opts) {
         cb();
     }, function (cb) {
         var changes = [];
-        for (var k in manifest) {
-            changes.push({
-                regexp: new RegExp( k.replace(/[\-\[\]\{\}\(\)\*\+\?\.\^\$\|]/g, "\\$&"), 'g' ),
-                replacement: manifest[k]
+        var dirReplacements = [];
+        if ( _.isObject(opts.dirReplacements) ) {
+            Object.keys(opts.dirReplacements).forEach(function (srcDirname) {
+                dirReplacements.push({
+                    dirRX:  escPathPattern( closeDirBySep(srcDirname) ),
+                    dirRpl: closeDirBySep(opts.dirReplacements[srcDirname])
+                });
             });
+        }
+
+        for (var k in manifest) {
+            var pattern = k;
+            if (opts.replaceReved) {
+                pattern = escPathPattern( (path.dirname(k) === '.' ? '' : closeDirBySep(path.dirname(k)) ) + path.basename(k, path.extname(k)) ) 
+                            + revSuffixStr 
+                            + escPathPattern( path.extname(k) );
+            } else {
+                pattern = escPathPattern(k);
+            }
+
+            if ( dirReplacements.length ) {
+                dirReplacements.forEach(function (dirRule) {
+                    changes.push({
+                        regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
+                        replacement: dirRule.dirRpl + manifest[k]
+                    });
+                });
+            } else {
+                changes.push({
+                    regexp: new RegExp( pattern, 'g' ),
+                    replacement: manifest[k]
+                });
+            }
         }
 
         mutables.forEach(function (file){
