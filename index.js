@@ -1,38 +1,106 @@
 'use strict';
-var _           = require('underscore');
-var gutil       = require('gulp-util');
-var PluginError = gutil.PluginError;
-var through     = require('through2');
-var path        = require('path');
+var _            = require('underscore');
+var gutil        = require('gulp-util');
+var PluginError  = gutil.PluginError;
+var through      = require('through2');
+var path         = require('path');
 
-var PLUGIN_NAME = 'gulp-rev-collector';
+var PLUGIN_NAME  = 'gulp-rev-collector';
 
-function revCollector() {
+var revSuffixStr = '-[0-9a-f]{8}-?';
+var revSuffixRX  = new RegExp( revSuffixStr );
+
+function _getManifestData(file) {
+    var data;
+    var ext = path.extname(file.path);
+    if (ext === '.json') {
+        var json = {};
+        try {
+            json = JSON.parse(file.contents.toString('utf8'))
+        } catch (x) {
+            this.emit('error', new PluginError(PLUGIN_NAME,  x));
+            return;
+        }
+        if (_.isObject(json)) {
+            var isRev = 1;
+            Object.keys(json).forEach(function (key) {
+                if ( path.basename(json[key]).replace(revSuffixRX, '' ) !==  path.basename(key) ) {
+                    isRev = 0;
+                }
+            });
+            
+            if (isRev) {
+                data = json;
+            }
+        }
+        
+    }
+    return data;
+}
+
+function escPathPattern(pattern) {
+    return pattern.replace(/[\-\[\]\{\}\(\)\*\+\?\.\^\$\|\/\\]/g, "\\$&");
+}
+
+function closeDirBySep(dirname) {
+    return dirname + (!dirname || new RegExp( escPathPattern(path.sep) + '$' ).test(dirname) ? '' : path.sep);
+}
+
+function revCollector(opts) {
+    if (!opts) {
+        opts = {};
+    }
+    
     var manifest  = {};
     var mutables = [];
     return through.obj(function (file, enc, cb) {
         if (!file.isNull()) {
-            var ext = path.extname(file.path);
-            if (ext === '.json') {
-                var json = {};
-                try {
-                    json = JSON.parse(file.contents.toString('utf8'))
-                } catch (x) {
-                    this.emit('error', new PluginError(PLUGIN_NAME,  x));
-                }
-                _.extend( manifest, json );
-            } else if (~['.js', '.css', '.html', '.htm', '.phtml', '.shtml', '.php', '.erb'].indexOf(ext)) {
+            var mData = _getManifestData(file);
+            if (mData) {
+                _.extend( manifest, mData );
+            } else {
                 mutables.push(file);
             }
         }
         cb();
     }, function (cb) {
         var changes = [];
-        for (var k in manifest) {
-            changes.push({
-                regexp: new RegExp( k.replace(/[\-\[\]\{\}\(\)\*\+\?\.\^\$\|]/g, "\\$&"), 'g' ),
-                replacement: manifest[k]
+        var dirReplacements = [];
+        if ( _.isObject(opts.dirReplacements) ) {
+            Object.keys(opts.dirReplacements).forEach(function (srcDirname) {
+                dirReplacements.push({
+                    dirRX:  escPathPattern( closeDirBySep(srcDirname) ),
+                    dirRpl: closeDirBySep(opts.dirReplacements[srcDirname])
+                });
             });
+        }
+
+        for (var k in manifest) {
+            var patterns = [ escPathPattern(k) ];
+            if (opts.replaceReved) {
+                patterns.push( escPathPattern( (path.dirname(k) === '.' ? '' : closeDirBySep(path.dirname(k)) ) + path.basename(k, path.extname(k)) ) 
+                            + revSuffixStr 
+                            + escPathPattern( path.extname(k) )
+                        );
+            }
+
+            if ( dirReplacements.length ) {
+                dirReplacements.forEach(function (dirRule) {
+                    patterns.forEach(function (pattern) {
+                        changes.push({
+                            regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
+                            replacement: dirRule.dirRpl + manifest[k]
+                        });
+                    });
+                });
+            } else {
+                patterns.forEach(function (pattern) {
+                    changes.push({
+                        regexp: new RegExp( pattern, 'g' ),
+                        replacement: manifest[k]
+                    });
+                });
+            }
         }
 
         mutables.forEach(function (file){

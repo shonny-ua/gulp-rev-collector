@@ -17,7 +17,7 @@ $ npm install --save-dev gulp-rev-collector
 
 ## Usage
 
-We can use [gulp-rev](https://github.com/sindresorhus/gulp-rev) to cache-bust several assets and generate manifest files for them. Then using gulp-rev-collector we can collect data from several manifest files and replace lincks to assets in html trmplates.
+We can use [gulp-rev](https://github.com/sindresorhus/gulp-rev) to cache-bust several assets and generate manifest files for them. Then using gulp-rev-collector we can collect data from several manifest files and replace lincks to assets in html templates.
 
 ```js
 var gulp         = require('gulp');
@@ -46,7 +46,13 @@ var minifyHTML   = require('gulp-minify-html');
 
 gulp.task('rev', function () {
     return gulp.src(['rev/**/*.json', 'templates/**/*.html'])
-        .pipe( revCollector() )
+        .pipe( revCollector({
+            replaceReved: true,
+            dirReplacements: {
+                'css': '/dist/css',
+                '/js/': '/dist/js/'
+            }
+        }) )
         .pipe( minifyHTML({
                 empty:true,
                 spare:true
@@ -55,7 +61,21 @@ gulp.task('rev', function () {
 });
 ```
 
-*Options are intentionally missing as the default should work in most cases.*
+### Options
+
+#### replaceReved
+
+Type : `Boolean`
+
+You set a flag, replaceReved, which will replace alredy replaced links in template's files. Default value is `false`.
+
+#### dirReplacements
+
+Specifies a directories replacement set. [gulp-rev](https://github.com/sindresorhus/gulp-rev) creates manifest files without any info about directories. E.c. if you use dirReplacements param from [Usage](#usage) example, you get next replacement:
+
+```
+"/css/style.css" => "/dist/css/style-1d87bebe.css"
+```
 
 ### Works with gulp-rev-collector
 
