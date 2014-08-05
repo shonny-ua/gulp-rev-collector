@@ -76,26 +76,29 @@ function revCollector(opts) {
         }
 
         for (var k in manifest) {
-            var pattern = k;
+            var patterns = [ escPathPattern(k) ];
             if (opts.replaceReved) {
-                pattern = escPathPattern( (path.dirname(k) === '.' ? '' : closeDirBySep(path.dirname(k)) ) + path.basename(k, path.extname(k)) ) 
+                patterns.push( escPathPattern( (path.dirname(k) === '.' ? '' : closeDirBySep(path.dirname(k)) ) + path.basename(k, path.extname(k)) ) 
                             + revSuffixStr 
-                            + escPathPattern( path.extname(k) );
-            } else {
-                pattern = escPathPattern(k);
+                            + escPathPattern( path.extname(k) )
+                        );
             }
 
             if ( dirReplacements.length ) {
                 dirReplacements.forEach(function (dirRule) {
-                    changes.push({
-                        regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
-                        replacement: dirRule.dirRpl + manifest[k]
+                    patterns.forEach(function (pattern) {
+                        changes.push({
+                            regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
+                            replacement: dirRule.dirRpl + manifest[k]
+                        });
                     });
                 });
             } else {
-                changes.push({
-                    regexp: new RegExp( pattern, 'g' ),
-                    replacement: manifest[k]
+                patterns.forEach(function (pattern) {
+                    changes.push({
+                        regexp: new RegExp( pattern, 'g' ),
+                        replacement: manifest[k]
+                    });
                 });
             }
         }
