@@ -7,35 +7,18 @@ var path         = require('path');
 
 var PLUGIN_NAME  = 'gulp-rev-collector';
 
-var revSuffixStr = '-[0-9a-f]{8}-?';
-var revSuffixRX  = new RegExp( revSuffixStr );
-
 function _getManifestData(file) {
-    var data;
-    var ext = path.extname(file.path);
-    if (ext === '.json') {
-        var json = {};
-        try {
-            json = JSON.parse(file.contents.toString('utf8'))
-        } catch (x) {
-            this.emit('error', new PluginError(PLUGIN_NAME,  x));
-            return;
-        }
-        if (_.isObject(json)) {
-            var isRev = 1;
-            Object.keys(json).forEach(function (key) {
-                if ( path.basename(json[key]).replace(revSuffixRX, '' ) !==  path.basename(key) ) {
-                    isRev = 0;
-                }
-            });
-            
-            if (isRev) {
-                data = json;
-            }
-        }
-        
+    var json;
+    try {
+        json = JSON.parse(file.contents.toString('utf8'));
+    } catch (x) {
+        this.emit('error', new PluginError(PLUGIN_NAME,  x));
+        return;
     }
-    return data;
+    if (!_.isObject(json)) {
+        this.emit('error', new PluginError(PLUGIN_NAME, "expected " + file.path + " to be contain a js-object (manifest file)."));
+    }
+    return  json;
 }
 
 function escPathPattern(pattern) {
@@ -47,17 +30,18 @@ function closeDirBySep(dirname) {
 }
 
 function revCollector(opts) {
-    if (!opts) {
-        opts = {};
-    }
-    
     var manifest  = {};
     var mutables = [];
+    var defaults = {
+        revSuffix: '-[0-9a-f]{8}-?',
+        manifestFilename: "rev-manifest.json"
+    };
+    opts = _.defaults(defaults, opts);
+
     return through.obj(function (file, enc, cb) {
         if (!file.isNull()) {
-            var mData = _getManifestData(file);
-            if (mData) {
-                _.extend( manifest, mData );
+            if (path.basename(file.path) === opts.manifestFilename) {
+                _.extend(manifest, _getManifestData(file, opts.manifestFilename));
             } else {
                 mutables.push(file);
             }
@@ -75,12 +59,12 @@ function revCollector(opts) {
             });
         }
 
-        for (var k in manifest) {
-            var patterns = [ escPathPattern(k) ];
+        _.each(manifest, function(value, key) {
+            var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {
-                patterns.push( escPathPattern( (path.dirname(k) === '.' ? '' : closeDirBySep(path.dirname(k)) ) + path.basename(k, path.extname(k)) ) 
-                            + revSuffixStr 
-                            + escPathPattern( path.extname(k) )
+                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) )
+                            + opts.revSuffix
+                            + escPathPattern( path.extname(key) )
                         );
             }
 
@@ -89,7 +73,7 @@ function revCollector(opts) {
                     patterns.forEach(function (pattern) {
                         changes.push({
                             regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
-                            replacement: dirRule.dirRpl + manifest[k]
+                            replacement: dirRule.dirRpl + manifest[key]
                         });
                     });
                 });
@@ -97,11 +81,11 @@ function revCollector(opts) {
                 patterns.forEach(function (pattern) {
                     changes.push({
                         regexp: new RegExp( pattern, 'g' ),
-                        replacement: manifest[k]
+                        replacement: manifest[key]
                     });
                 });
             }
-        }
+        });
 
         mutables.forEach(function (file){
             if (!file.isNull()) {
@@ -113,7 +97,7 @@ function revCollector(opts) {
             }
             this.push(file);
         }, this);
-        
+
         cb();
     });
 }
