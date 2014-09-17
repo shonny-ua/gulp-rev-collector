@@ -7,16 +7,20 @@ var path         = require('path');
 
 var PLUGIN_NAME  = 'gulp-rev-collector';
 
-var revSuffixStr = '-[0-9a-f]{8}-?';
-var revSuffixRX  = new RegExp( revSuffixStr );
+var defaults = {
+    revSuffix: '-[0-9a-f]{8}-?'
+};
 
-function _getManifestData(file) {
+function _getManifestData(file, opts) {
     var data;
     var ext = path.extname(file.path);
     if (ext === '.json') {
         var json = {};
         try {
-            json = JSON.parse(file.contents.toString('utf8'))
+            var content = file.contents.toString('utf8');
+            if (content) {
+                json = JSON.parse(content);
+            }
         } catch (x) {
             this.emit('error', new PluginError(PLUGIN_NAME,  x));
             return;
@@ -24,7 +28,7 @@ function _getManifestData(file) {
         if (_.isObject(json)) {
             var isRev = 1;
             Object.keys(json).forEach(function (key) {
-                if ( path.basename(json[key]).replace(revSuffixRX, '' ) !==  path.basename(key) ) {
+                if ( path.basename(json[key]).replace(new RegExp( opts.revSuffix ), '' ) !==  path.basename(key) ) {
                     isRev = 0;
                 }
             });
@@ -47,15 +51,13 @@ function closeDirBySep(dirname) {
 }
 
 function revCollector(opts) {
-    if (!opts) {
-        opts = {};
-    }
+    opts = _.defaults((opts || {}), defaults);
     
     var manifest  = {};
     var mutables = [];
     return through.obj(function (file, enc, cb) {
         if (!file.isNull()) {
-            var mData = _getManifestData(file);
+            var mData = _getManifestData.call(this, file, opts);
             if (mData) {
                 _.extend( manifest, mData );
             } else {
@@ -75,12 +77,12 @@ function revCollector(opts) {
             });
         }
 
-        for (var k in manifest) {
-            var patterns = [ escPathPattern(k) ];
+        for (var key in manifest) {
+            var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {
-                patterns.push( escPathPattern( (path.dirname(k) === '.' ? '' : closeDirBySep(path.dirname(k)) ) + path.basename(k, path.extname(k)) ) 
-                            + revSuffixStr 
-                            + escPathPattern( path.extname(k) )
+                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) ) 
+                            + opts.revSuffix 
+                            + escPathPattern( path.extname(key) )
                         );
             }
 
@@ -89,7 +91,7 @@ function revCollector(opts) {
                     patterns.forEach(function (pattern) {
                         changes.push({
                             regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
-                            replacement: dirRule.dirRpl + manifest[k]
+                            replacement: dirRule.dirRpl + manifest[key]
                         });
                     });
                 });
@@ -97,7 +99,7 @@ function revCollector(opts) {
                 patterns.forEach(function (pattern) {
                     changes.push({
                         regexp: new RegExp( pattern, 'g' ),
-                        replacement: manifest[k]
+                        replacement: manifest[key]
                     });
                 });
             }
