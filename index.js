@@ -80,7 +80,7 @@ function revCollector(opts) {
         for (var key in manifest) {
             var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {
-                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) ) 
+                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : key.slice(0, key.lastIndexOf(path.basename(key)))) + path.basename(key, path.extname(key)) ) 
                             + opts.revSuffix 
                             + escPathPattern( path.extname(key) )
                         );
