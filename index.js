@@ -47,7 +47,7 @@ function escPathPattern(pattern) {
 }
 
 function closeDirBySep(dirname) {
-    return dirname + (!dirname || new RegExp( escPathPattern(path.sep) + '$' ).test(dirname) ? '' : path.sep);
+    return dirname + (!dirname || new RegExp( escPathPattern('/') + '$' ).test(dirname) ? '' : '/');
 }
 
 function revCollector(opts) {
