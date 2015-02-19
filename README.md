@@ -51,6 +51,11 @@ gulp.task('rev', function () {
             dirReplacements: {
                 'css': '/dist/css',
                 '/js/': '/dist/js/'
+            },
+            'cdn' : {
+                'subdomain' : '//cdn',
+                'domain': 'domain.com',
+                'limit': 4
             }
         }) )
         .pipe( minifyHTML({
@@ -83,6 +88,14 @@ Type : `String`
 
 It is pattern for define reved files suffixes. Default value is '-[0-9a-f]{8}-?'. This is necessary in case of e.c. [gulp-rename](https://github.com/hparra/gulp-rename) usage. If reved filenames had different from default mask.
 
+#### cdn
+
+Specifies a cdn to prepend to replacement set.  Must be used in conjunction with dirReplacement.
+Optional ```limit```: CDN subdomains will be created in a random numbered order (up to limit) to facilitate using multiple cdn cnames.
+
+```
+"/css/style.css" => "//cdn[1-4].domain.com/dist/css/style-1d87bebe.css"
+```
 
 ### Works with gulp-rev-collector
 
