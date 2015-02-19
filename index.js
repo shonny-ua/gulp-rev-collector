@@ -87,11 +87,19 @@ function revCollector(opts) {
             }
 
             if ( dirReplacements.length ) {
+                var cdn = '';
+                if(opts.cdn){
+                    if(opts.cdn.limit){
+                        cdn = opts.cdn.subdomain + (Math.floor(Math.random() * opts.cdn.limit) + 1) + '.' + opts.cdn.domain;
+                    }else{
+                        cdn = opts.cdn.subdomain + '.' + opts.cdn.domain;
+                    }
+                }
                 dirReplacements.forEach(function (dirRule) {
                     patterns.forEach(function (pattern) {
                         changes.push({
                             regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
-                            replacement: dirRule.dirRpl + manifest[key]
+                            replacement: cdn + dirRule.dirRpl + manifest[key]
                         });
                     });
                 });
@@ -115,7 +123,7 @@ function revCollector(opts) {
             }
             this.push(file);
         }, this);
-        
+
         cb();
     });
 }
