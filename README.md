@@ -50,7 +50,10 @@ gulp.task('rev', function () {
             replaceReved: true,
             dirReplacements: {
                 'css': '/dist/css',
-                '/js/': '/dist/js/'
+                '/js/': '/dist/js/',
+                'cdn/': function(manifest_value) {
+                    return '//cdn' + (Math.floor(Math.random() * 9) + 1) + '.' + 'exsample.dot' + '/img/' + manifest_value;
+                }
             }
         }) )
         .pipe( minifyHTML({
@@ -75,6 +78,8 @@ Specifies a directories replacement set. [gulp-rev](https://github.com/sindresor
 
 ```
 "/css/style.css" => "/dist/css/style-1d87bebe.css"
+"/js/script1.js" => "/dist/script1-61e0be79.js"
+"cdn/image.gif"  => "//cdn8.example.dot/img/image-35c3af81.gif"
 ```
 
 #### revSuffix

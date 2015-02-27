@@ -72,7 +72,7 @@ function revCollector(opts) {
             Object.keys(opts.dirReplacements).forEach(function (srcDirname) {
                 dirReplacements.push({
                     dirRX:  escPathPattern( closeDirBySep(srcDirname) ),
-                    dirRpl: closeDirBySep(opts.dirReplacements[srcDirname])
+                    dirRpl: opts.dirReplacements[srcDirname]
                 });
             });
         }
@@ -91,7 +91,9 @@ function revCollector(opts) {
                     patterns.forEach(function (pattern) {
                         changes.push({
                             regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
-                            replacement: dirRule.dirRpl + manifest[key]
+                            replacement: _.isFunction(dirRule.dirRpl) 
+                                            ? dirRule.dirRpl(manifest[key]) 
+                                            : closeDirBySep(dirRule.dirRpl) + manifest[key]
                         });
                     });
                 });
