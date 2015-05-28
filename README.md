@@ -12,7 +12,7 @@
 ## Install
 
 ```sh
-$ npm install --save-dev gulp-rev-collector
+$ npm install --save gulp-rev-collector
 ```
 
 ## Usage
