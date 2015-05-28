@@ -79,14 +79,14 @@ Specifies a directories replacement set. [gulp-rev](https://github.com/sindresor
 ```
 "/css/style.css" => "/dist/css/style-1d87bebe.css"
 "/js/script1.js" => "/dist/script1-61e0be79.js"
-"cdn/image.gif"  => "//cdn8.example.dot/img/image-35c3af81.gif"
+"cdn/image.gif"  => "//cdn8.example.dot/img/image-35c3af8134.gif"
 ```
 
 #### revSuffix
 
 Type : `String`
 
-It is pattern for define reved files suffixes. Default value is '-[0-9a-f]{8}-?'. This is necessary in case of e.c. [gulp-rename](https://github.com/hparra/gulp-rename) usage. If reved filenames had different from default mask.
+It is pattern for define reved files suffixes. Default value is '-[0-9a-f]{8,10}-?'. This is necessary in case of e.c. [gulp-rename](https://github.com/hparra/gulp-rename) usage. If reved filenames had different from default mask.
 
 
 ### Works with gulp-rev-collector

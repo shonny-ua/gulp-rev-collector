@@ -8,7 +8,7 @@ var path         = require('path');
 var PLUGIN_NAME  = 'gulp-rev-collector';
 
 var defaults = {
-    revSuffix: '-[0-9a-f]{8}-?'
+    revSuffix: '-[0-9a-f]{8,10}-?'
 };
 
 function _getManifestData(file, opts) {

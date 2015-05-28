@@ -6,7 +6,7 @@ var path                = require('path');
 
 var cssManifestBody     = '{"style.css":"style-1d87bebe.css"}';
 var jsManifestBody      = '{"script1.js": "script1-61e0be79.js", "script2.js": "script2-a42f5380.js"}';
-var imgManifestBody     = '{"image.gif": "image-35c3af81.gif"}';
+var imgManifestBody     = '{"image.gif": "image-35c3af8134.gif"}';
 var htmlFileBody        = '<html><head><link rel="stylesheet" href="/css/style.css" /><script src="/js/script1.js"></script><script src="/scripts/script2.js"></script></head><body><img src="cdn/image.gif" /></body></html>';
 var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/css/style-af457da8.css" /><script src="/js/script1-ce78a5c3.js"></script><script src="/js/script2.js"></script></head><body></body></html>';
 
@@ -222,7 +222,7 @@ it('should replace links in .html file with "dirReplacements"', function (cb) {
         );
 
         assert(
-            /\/\/cdn[0-9]\.example\.dot\/img\/image-35c3af81\.gif/.test(contents),
+            /\/\/cdn[0-9]\.example\.dot\/img\/image-35c3af8134\.gif/.test(contents),
             'The IMG file name should be correct replaced'
         );
 
