@@ -91,6 +91,7 @@ function revCollector(opts) {
                     patterns.forEach(function (pattern) {
                         changes.push({
                             regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
+                            patternLength: (dirRule.dirRX + pattern).length,
                             replacement: _.isFunction(dirRule.dirRpl) 
                                             ? dirRule.dirRpl(manifest[key]) 
                                             : closeDirBySep(dirRule.dirRpl) + manifest[key]
@@ -101,12 +102,16 @@ function revCollector(opts) {
                 patterns.forEach(function (pattern) {
                     changes.push({
                         regexp: new RegExp( pattern, 'g' ),
+                        patternLength: pattern.length,
                         replacement: manifest[key]
                     });
                 });
             }
         }
 
+        // Replace longer patterns first
+        // e.g. match `script.js.map` before `script.js`
+        changes.sort(function(a, b) { return b.patternLength - a.patternLength; });
         mutables.forEach(function (file){
             if (!file.isNull()) {
                 var src = file.contents.toString('utf8');
