@@ -17,7 +17,7 @@ $ npm install --save gulp-rev-collector
 
 ## Usage
 
-We can use [gulp-rev](https://github.com/sindresorhus/gulp-rev) to cache-bust several assets and generate manifest files for them. Then using gulp-rev-collector we can collect data from several manifest files and replace lincks to assets in html templates.
+We can use [gulp-rev](https://github.com/sindresorhus/gulp-rev) to cache-bust several assets and generate manifest files for them. Then using gulp-rev-collector we can collect data from several manifest files and replace links to assets in html templates.
 
 ```js
 var gulp         = require('gulp');
