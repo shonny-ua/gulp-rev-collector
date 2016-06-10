@@ -32,12 +32,12 @@ function _getManifestData(file, opts) {
                     isRev = 0;
                 }
             });
-            
+
             if (isRev) {
                 data = json;
             }
         }
-        
+
     }
     return data;
 }
@@ -52,7 +52,7 @@ function closeDirBySep(dirname) {
 
 function revCollector(opts) {
     opts = _.defaults((opts || {}), defaults);
-    
+
     var manifest  = {};
     var mutables = [];
     return through.obj(function (file, enc, cb) {
@@ -80,8 +80,8 @@ function revCollector(opts) {
         for (var key in manifest) {
             var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {
-                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) ) 
-                            + opts.revSuffix 
+                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) )
+                            + opts.revSuffix
                             + escPathPattern( path.extname(key) )
                         );
             }
@@ -92,18 +92,19 @@ function revCollector(opts) {
                         changes.push({
                             regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
                             patternLength: (dirRule.dirRX + pattern).length,
-                            replacement: _.isFunction(dirRule.dirRpl) 
-                                            ? dirRule.dirRpl(manifest[key]) 
+                            replacement: _.isFunction(dirRule.dirRpl)
+                                            ? dirRule.dirRpl(manifest[key])
                                             : closeDirBySep(dirRule.dirRpl) + manifest[key]
                         });
                     });
                 });
             } else {
                 patterns.forEach(function (pattern) {
+                    // without dirReplacements we must leave asset filenames with prefixes in its original state
                     changes.push({
-                        regexp: new RegExp( pattern, 'g' ),
+                        regexp: new RegExp( '([\/\\\\\'"])' + pattern, 'g' ),
                         patternLength: pattern.length,
-                        replacement: manifest[key]
+                        replacement: '$1' + manifest[key]
                     });
                 });
             }
@@ -126,7 +127,7 @@ function revCollector(opts) {
             }
             this.push(file);
         }, this);
-        
+
         cb();
     });
 }

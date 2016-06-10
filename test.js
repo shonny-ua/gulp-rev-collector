@@ -19,6 +19,9 @@ var cssSfxManifestBody     = '{"style.css":"style-1d87bebe-rev.css"}';
 var jsSfxManifestBody      = '{"script1.js": "script1-61e0be79-rev.js", "script2.js": "script2-a42f5380-rev.js"}';
 var htmlSfxRevedFileBody   = '<html><head><link rel="stylesheet" href="/css/style-af457da8-rev.css" /><script src="/js/script1-ce78a5c3-rev.js"></script><script src="/js/script2.js"></script></head><body></body></html>';
 
+var doubleCssManifestBody  = '{"style.css":"style-1d87bebe.css", "bebe.css":"bebe-c4092d8d.css"}';
+var doubleHtmlFileBody     = '<html><head><link rel="stylesheet" href="/css/style.css" /><link rel="stylesheet" href="/css/bebe.css" /></head><body></body></html>';
+
 it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
@@ -364,6 +367,62 @@ it('should replace reved links in .html file with "revSuffix" and "replaceReved"
         assert(
             /\/js\/script2-a42f5380-rev\.js/.test(contents),
             'The JS#2 file name should be correct replace'
+        );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
+it('should replace all links in .html file once', function (cb) {
+    var stream = revCollector();
+    var fileCount = 0;
+
+    stream.write(new gutil.File({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(doubleCssManifestBody)
+    }));
+
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(doubleHtmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var ext = path.extname(file.path);
+        var contents = file.contents.toString('utf8');
+
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
+
+        assert(
+            !/style\.css/.test(contents),
+            'The CSS#1 file name should be replaced'
+        );
+
+        assert(
+            /\/css\/style-1d87bebe\.css/.test(contents),
+            'The CSS#1 file name should be correct replaced'
+        );
+
+        assert(
+            !/[^7]bebe\.css/.test(contents),
+            'The CSS#1&&#2 file name should be replaced once'
+        );
+
+        assert(
+            !/\/css\/style-1d87bebe-c4092d8d\.css/.test(contents),
+            'The CSS#1 file name should be replaced once'
+        );
+
+        assert(
+            /\/css\/bebe-c4092d8d\.css/.test(contents),
+            'The CSS#2 file name should be correct replaced'
         );
 
         fileCount++;
