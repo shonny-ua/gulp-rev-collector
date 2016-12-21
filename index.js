@@ -77,6 +77,15 @@ function revCollector(opts) {
             });
         }
 
+        if (opts.collectedManifest) {
+            this.push(
+                new gutil.File({
+                    path: opts.collectedManifest,
+                    contents: new Buffer(JSON.stringify(manifest))
+                })
+            );
+        }
+
         for (var key in manifest) {
             var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {

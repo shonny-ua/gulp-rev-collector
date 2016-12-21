@@ -3,6 +3,7 @@ var assert              = require('assert');
 var gutil               = require('gulp-util');
 var revCollector        = require('./index');
 var path                = require('path');
+var isEqual             = require('lodash.isequal');
 
 var cssManifestBody     = '{"style.css":"style-1d87bebe.css"}';
 var jsManifestBody      = '{"script1.js": "script1-61e0be79.js", "script2.js": "script2-a42f5380.js"}';
@@ -21,6 +22,13 @@ var htmlSfxRevedFileBody   = '<html><head><link rel="stylesheet" href="/css/styl
 
 var doubleCssManifestBody  = '{"style.css":"style-1d87bebe.css", "bebe.css":"bebe-c4092d8d.css"}';
 var doubleHtmlFileBody     = '<html><head><link rel="stylesheet" href="/css/style.css" /><link rel="stylesheet" href="/css/bebe.css" /></head><body></body></html>';
+
+var collectedManifestStandard = {
+    'style.css': 'style-1d87bebe.css',
+    'script1.js': 'script1-61e0be79.js',
+    'script2.js': 'script2-a42f5380.js'
+};
+
 
 it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
@@ -76,6 +84,43 @@ it('should replace links in .html file wo params', function (cb) {
             /\/scripts\/script2-a42f5380\.js/.test(contents),
             'The JS#2 file name should be correct replaced'
         );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
+it('should generate correct collected manifest file', function (cb) {
+    var stream = revCollector({
+        collectedManifest: 'collectedManifest.json'
+    });
+    var fileCount = 0;
+
+    stream.write(new gutil.File({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(cssManifestBody)
+    }));
+
+    stream.write(new gutil.File({
+        path: 'rev/js/rev-manifest.json',
+        contents: new Buffer(jsManifestBody)
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var ext = path.extname(file.path);
+        var contents = file.contents.toString('utf8');
+        var collectedManifest = JSON.parse(contents);
+
+        assert(isEqual(collectedManifest, collectedManifestStandard), 'The collected manifest content should be correct');
+
+        assert.equal(fpath, 'collectedManifest.json', 'Only collectedManifest.json file should pass through the stream');
 
         fileCount++;
     });

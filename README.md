@@ -66,6 +66,12 @@ gulp.task('rev', function () {
 
 ### Options
 
+#### collectedManifest
+
+Type : `String`
+
+It is a filename for collecded and merged manifest data in `json` format.
+
 #### replaceReved
 
 Type : `Boolean`
