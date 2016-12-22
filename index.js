@@ -81,7 +81,7 @@ function revCollector(opts) {
             this.push(
                 new gutil.File({
                     path: opts.collectedManifest,
-                    contents: new Buffer(JSON.stringify(manifest))
+                    contents: new Buffer(JSON.stringify(manifest, null, "\t"))
                 })
             );
         }
