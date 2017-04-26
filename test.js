@@ -134,7 +134,7 @@ it('should generate correct collected manifest file', function (cb) {
 });
 
 // https://github.com/shonny-ua/gulp-rev-collector/issues/33
-it('should generate correct collected manifest file', function (cb) {
+it('should generate correct collected manifest file, even if the map includes multiple extensions', function (cb) {
     var stream = revCollector({
         collectedManifest: 'collectedManifest.json'
     });
