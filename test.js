@@ -29,7 +29,6 @@ var collectedManifestStandard = {
     'script2.js': 'script2-a42f5380.js'
 };
 
-
 it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
@@ -42,6 +41,11 @@ it('should replace links in .html file wo params', function (cb) {
     stream.write(new gutil.File({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
+    }));
+
+    stream.write(new gutil.File({
+        path: 'rev/img/rev-manifest.json',
+        contents: new Buffer(imgManifestBody)
     }));
 
     stream.write(new gutil.File({
@@ -83,6 +87,16 @@ it('should replace links in .html file wo params', function (cb) {
         assert(
             /\/scripts\/script2-a42f5380\.js/.test(contents),
             'The JS#2 file name should be correct replaced'
+        );
+
+        assert(
+            !/image\.gif/.test(contents),
+            'The image file name should be replaced'
+        );
+
+        assert(
+            /cdn\/image-35c3af8134\.gif/.test(contents),
+            'The image file name should be correctly replaced'
         );
 
         fileCount++;
