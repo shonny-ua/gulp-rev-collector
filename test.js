@@ -115,7 +115,6 @@ it('should replace links in .html file wo params', function (cb) {
 
 it('should replace asset links without leading slashes', function (cb) {
     var stream = revCollector();
-    var fileCount = 0;
 
     stream.write(new gutil.File({
         path: 'rev/img/rev-manifest.json',
@@ -128,10 +127,7 @@ it('should replace asset links without leading slashes', function (cb) {
     }));
 
     stream.on('data', function (file) {
-        var ext = path.extname(file.path);
         var contents = file.contents.toString('utf8');
-
-        assert.equal(ext, '.html', 'Only html files should pass through the stream');
 
         assert(
             !/image\.gif/.test(contents),
@@ -142,21 +138,15 @@ it('should replace asset links without leading slashes', function (cb) {
             /image-35c3af8134\.gif/.test(contents),
             'The unresolved image file name should be correctly replaced'
         );
-
-        fileCount++;
     });
 
-    stream.on('end', function() {
-        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
-        cb();
-    });
+    stream.on('end', cb);
 
     stream.end();
 });
 
 it('should replace asset links which are not wrapped in quotes', function (cb) {
     var stream = revCollector();
-    var fileCount = 0;
 
     stream.write(new gutil.File({
         path: 'rev/img/rev-manifest.json',
@@ -169,10 +159,7 @@ it('should replace asset links which are not wrapped in quotes', function (cb) {
     }));
 
     stream.on('data', function (file) {
-        var ext = path.extname(file.path);
         var contents = file.contents.toString('utf8');
-
-        assert.equal(ext, '.html', 'Only html files should pass through the stream');
 
         assert(
             !/image\.gif/.test(contents),
@@ -183,14 +170,9 @@ it('should replace asset links which are not wrapped in quotes', function (cb) {
             /image-35c3af8134\.gif/.test(contents),
             'The unquoted image file name should be correctly replaced'
         );
-
-        fileCount++;
     });
 
-    stream.on('end', function() {
-        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
-        cb();
-    });
+    stream.on('end', cb);
 
     stream.end();
 });
