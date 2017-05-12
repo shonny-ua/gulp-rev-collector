@@ -11,6 +11,9 @@ var imgManifestBody     = '{"image.gif": "image-35c3af8134.gif"}';
 var htmlFileBody        = '<html><head><link rel="stylesheet" href="/css/style.css" /><script src="/js/script1.js"></script><script src="/scripts/script2.js"></script></head><body><img src="cdn/image.gif" /></body></html>';
 var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/css/style-af457da8.css" /><script src="/js/script1-ce78a5c3.js"></script><script src="/js/script2.js"></script></head><body></body></html>';
 
+var unresolvedHtmlFileBody = '<html><head><style>body { background-image: url(image.gif); }</style></head><body></body></html>';
+var unquotedHtmlFileBody   = '<html><head></head><body><img src=image.gif></body></html>';
+
 var cssSortManifestBody     = '{"style.css":"style-1d87bebe.css", "style.css.css":"style-ebeb78d1.css.css"}';
 var jsSortManifestBody      = '{"script1.js": "script1-61e0be79.js", "script2.js": "script2-a42f5380.js", "script1.js.js": "script1-98eb0e16.js.js", "script2.js.js": "script2-0835f24a.js.js"}';
 var imgSortManifestBody     = '{"image.gif": "image-35c3af8134.gif", "image.gif.gif": "image-4318fa3c53.gif"}';
@@ -29,7 +32,6 @@ var collectedManifestStandard = {
     'script2.js': 'script2-a42f5380.js'
 };
 
-
 it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
@@ -42,6 +44,11 @@ it('should replace links in .html file wo params', function (cb) {
     stream.write(new gutil.File({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
+    }));
+
+    stream.write(new gutil.File({
+        path: 'rev/img/rev-manifest.json',
+        contents: new Buffer(imgManifestBody)
     }));
 
     stream.write(new gutil.File({
@@ -85,6 +92,16 @@ it('should replace links in .html file wo params', function (cb) {
             'The JS#2 file name should be correct replaced'
         );
 
+        assert(
+            !/image\.gif/.test(contents),
+            'The image file name should be replaced'
+        );
+
+        assert(
+            /cdn\/image-35c3af8134\.gif/.test(contents),
+            'The image file name should be correctly replaced'
+        );
+
         fileCount++;
     });
 
@@ -92,6 +109,70 @@ it('should replace links in .html file wo params', function (cb) {
         assert.equal(fileCount, 1, 'Only one file should pass through the stream');
         cb();
     });
+
+    stream.end();
+});
+
+it('should replace asset links without leading slashes', function (cb) {
+    var stream = revCollector();
+
+    stream.write(new gutil.File({
+        path: 'rev/img/rev-manifest.json',
+        contents: new Buffer(imgManifestBody)
+    }));
+
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(unresolvedHtmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var contents = file.contents.toString('utf8');
+
+        assert(
+            !/image\.gif/.test(contents),
+            'The image file name should be replaced'
+        );
+
+        assert(
+            /image-35c3af8134\.gif/.test(contents),
+            'The unresolved image file name should be correctly replaced'
+        );
+    });
+
+    stream.on('end', cb);
+
+    stream.end();
+});
+
+it('should replace asset links which are not wrapped in quotes', function (cb) {
+    var stream = revCollector();
+
+    stream.write(new gutil.File({
+        path: 'rev/img/rev-manifest.json',
+        contents: new Buffer(imgManifestBody)
+    }));
+
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(unquotedHtmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var contents = file.contents.toString('utf8');
+
+        assert(
+            !/image\.gif/.test(contents),
+            'The image file name should be replaced'
+        );
+
+        assert(
+            /image-35c3af8134\.gif/.test(contents),
+            'The unquoted image file name should be correctly replaced'
+        );
+    });
+
+    stream.on('end', cb);
 
     stream.end();
 });

@@ -111,7 +111,7 @@ function revCollector(opts) {
                 patterns.forEach(function (pattern) {
                     // without dirReplacements we must leave asset filenames with prefixes in its original state
                     changes.push({
-                        regexp: new RegExp( '([\/\\\\\'"])' + pattern, 'g' ),
+                        regexp: new RegExp( '([\/\\\\\'"\(=])' + pattern, 'g' ),
                         patternLength: pattern.length,
                         replacement: '$1' + manifest[key]
                     });
