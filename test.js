@@ -133,6 +133,42 @@ it('should generate correct collected manifest file', function (cb) {
     stream.end();
 });
 
+// https://github.com/shonny-ua/gulp-rev-collector/issues/33
+it('should generate correct collected manifest file, even if the map includes multiple extensions', function (cb) {
+    var stream = revCollector({
+        collectedManifest: 'collectedManifest.json'
+    });
+    var fileCount = 0;
+    var revisionMap = {
+        "js/app.js": "js/app-aaaaaaaaaa.js",
+        "maps/js/app.js.map": "maps/js/app-aaaaaaaaaa.js.map"
+    };
+
+    stream.write(new gutil.File({
+        path: 'rev/js/rev-manifest.json',
+        contents: new Buffer(JSON.stringify(revisionMap))
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var contents = file.contents.toString('utf8');
+        var collectedManifest = JSON.parse(contents);
+
+        assert(isEqual(collectedManifest, revisionMap), 'The collected manifest content should match the found one');
+
+        assert.equal(fpath, 'collectedManifest.json', 'Only collectedManifest.json file should pass through the stream');
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
 it('should match longer rev patterns before shorter ones', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
