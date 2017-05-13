@@ -80,6 +80,8 @@ You set a flag, replaceReved, which will replace alredy replaced links in templa
 
 #### dirReplacements
 
+Type : `Object`
+
 Specifies a directories replacement set. [gulp-rev](https://github.com/sindresorhus/gulp-rev) creates manifest files without any info about directories. E.c. if you use dirReplacements param from [Usage](#usage) example, you get next replacement:
 
 ```
@@ -94,6 +96,28 @@ Type : `String`
 
 It is pattern for define reved files suffixes. Default value is '-[0-9a-f]{8,10}-?'. This is necessary in case of e.c. [gulp-rename](https://github.com/hparra/gulp-rename) usage. If reved filenames had different from default mask.
 
+#### extMap
+
+Type : `Object`
+
+If You use some methods to modify the rev_manifest.json after use [gulp-rev](https://github.com/sindresorhus/gulp-rev) and get a result like this:
+```
+{
+    "assets/less/common.less": "assets/css/common-2c0d21e40c.css"
+}
+```
+It means that keys and values in the rev_manifest.json have different ext : less & css.
+
+You can define extentions maping rules for correct manifest file processing.
+
+Default value is:
+```
+{
+    '.scss': '.css',
+    '.less': '.css',
+    '.jsx': '.js'
+}
+```
 
 ### Works with gulp-rev-collector
 

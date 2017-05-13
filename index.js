@@ -136,11 +136,16 @@ function revCollector(opts) {
                 patterns.forEach(function (pattern) {
                     // without dirReplacements we must leave asset filenames with prefixes in its original state
                     var prefixDelim = '([\/\\\\\'"';
-                    if (!~pattern.indexOf('(')) {
-                        prefixDelim += '\(';
-                    }
-                    if (!~pattern.indexOf('=')) {
-                        prefixDelim += '=';
+                    // if dir part in pattern exists, all exsotoic symbols should be correct processed using dirReplacements
+                    if (/[\\\\\/]/.test(pattern)) {
+                        prefixDelim += '\(=';
+                    } else {
+                        if (!/[\(\)]/.test(pattern)) {
+                            prefixDelim += '\(';
+                        }
+                        if (!~pattern.indexOf('=')) {
+                            prefixDelim += '=';
+                        }
                     }
                     prefixDelim += '])';
                     changes.push({

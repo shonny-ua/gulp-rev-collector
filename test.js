@@ -184,9 +184,7 @@ it('should generate correct collected manifest file', function (cb) {
 
 // https://github.com/shonny-ua/gulp-rev-collector/issues/30
 it('should generate correct collected manifest file, even if the map includes different extensions', function (cb) {
-    var stream = revCollector({
-        // collectedManifest: 'collectedManifest.json'
-    });
+    var stream = revCollector();
     var fileCount = 0;
     var revisionMap = {
         "assets/less/common.less": "assets/css/common-2c0d21e40c.css"
@@ -232,6 +230,59 @@ it('should generate correct collected manifest file, even if the map includes di
 
     stream.end();
 });
+
+it('should generate correct collected manifest file, even if the map includes different exotic extensions', function (cb) {
+    var stream = revCollector({
+        extMap: {
+            '.loss': '.css'
+        }
+    });
+    var fileCount = 0;
+    var revisionMap = {
+        "assets/less/common.loss": "assets/css/common-2c0d21e40c.css"
+    };
+
+    var htmlFileBody        = '<html><head><link rel="stylesheet" href="/assets/less/common.loss" /></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/assets/css/common-2c0d21e40c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+
+    stream.write(new gutil.File({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(JSON.stringify(revisionMap))
+    }));
+
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(htmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var contents = file.contents.toString('utf8');
+        var ext = path.extname(file.path);
+
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
+
+        assert(
+            !/assets\/less\/common\.loss/.test(contents),
+            'The LESS file name should be replaced'
+        );
+
+        assert(
+            /assets\/css\/common-2c0d21e40c\.css/.test(contents),
+            'The LESS 2 CSS file name should be correct replaced'
+        );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
 // https://github.com/shonny-ua/gulp-rev-collector/issues/32
 it('should generate correct collected manifest file, even if f the name of the JS file contains “-”', function (cb) {
     var stream = revCollector({
