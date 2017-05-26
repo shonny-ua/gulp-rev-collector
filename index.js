@@ -114,9 +114,20 @@ function revCollector(opts) {
         for (var key in manifest) {
             var patterns = [ escPathPattern(key) ];
             if (opts.replaceReved) {
-                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) + path.basename(key, path.extname(key)) )
-                            + opts.revSuffix
-                            + escPathPattern( path.extname(key) )
+                var patternExt = path.extname(key);
+                if (patternExt in opts.extMap) {
+                    patternExt = '(' + escPathPattern(patternExt) + '|' + escPathPattern(opts.extMap[patternExt]) + ')';
+                } else {
+                    patternExt = escPathPattern(patternExt);
+                }
+                patterns.push( escPathPattern( (path.dirname(key) === '.' ? '' : closeDirBySep(path.dirname(key)) ) )
+                            + path.basename(key, path.extname(key))
+                                .split('.')
+                                .map(function(part){
+                                    return escPathPattern(part) + '(' + opts.revSuffix + ')?';
+                                })
+                                .join('\\.')
+                            + patternExt
                         );
             }
 

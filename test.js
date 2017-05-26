@@ -337,12 +337,13 @@ it('should generate correct collected manifest file, even if f the name of the J
 // https://github.com/shonny-ua/gulp-rev-collector/issues/33
 it('should generate correct collected manifest file, even if the map includes multiple extensions', function (cb) {
     var stream = revCollector({
-        collectedManifest: 'collectedManifest.json'
+        replaceReved: true
     });
     var fileCount = 0;
     var revisionMap = {
-        "js/app.js": "js/app-aaaaaaaaaa.js",
-        "maps/js/app.js.map": "maps/js/app-aaaaaaaaaa.js.map"
+        "maps/js/app.js.map": "maps/js/app-aaaaaaaaaa.js.map",
+        "maps/css/app.min.css": "maps/css/app-aaaaaaaaaa.min.css",
+        "maps/css/appless.max.less": "maps/css/appless-aaaaaaaaaa.max.css"
     };
 
     stream.write(new gutil.File({
@@ -350,14 +351,47 @@ it('should generate correct collected manifest file, even if the map includes mu
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer('<sctipt src="maps/js/app-bbbbbbbbbb.js.map"></script><link rel="stylesheet" href="/maps/css/app-bbbbbbbbbb.min.css" /><link rel="stylesheet" href="/maps/css/appless-bbbbbbbbbb.max.css" />')
+    }));
+
     stream.on('data', function (file) {
-        var fpath = file.path;
+        var ext = path.extname(file.path);
         var contents = file.contents.toString('utf8');
-        var collectedManifest = JSON.parse(contents);
 
-        assert(isEqual(collectedManifest, revisionMap), 'The collected manifest content should match the found one');
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
 
-        assert.equal(fpath, 'collectedManifest.json', 'Only collectedManifest.json file should pass through the stream');
+        assert(
+            !/maps\/js\/app-bbbbbbbbbb\.js\.map/.test(contents),
+            'The js.map file name should be replaced'
+        );
+
+        assert(
+            /maps\/js\/app-aaaaaaaaaa\.js\.map/.test(contents),
+            'The js.map file name should be correct replaced'
+        );
+
+        assert(
+            !/maps\/css\/app-bbbbbbbbbb\.min\.css/.test(contents),
+            'The min.css file name should be replaced'
+        );
+
+        assert(
+            /maps\/css\/app-aaaaaaaaaa\.min\.css/.test(contents),
+            'The min.css file name should be correct replaced'
+        );
+
+        assert(
+            !/maps\/css\/appless-bbbbbbbbbb\.max\.css/.test(contents),
+            'The max.css (by less) file name should be replaced'
+        );
+
+        assert(
+            /maps\/css\/appless-aaaaaaaaaa\.max\.css/.test(contents),
+            'The max.css file name should be correct replaced'
+        );
+
 
         fileCount++;
     });
