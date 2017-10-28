@@ -31,7 +31,7 @@ var collectedManifestStandard = {
     'script1.js': 'script1-61e0be79.js',
     'script2.js': 'script2-a42f5380.js'
 };
-
+/*
 it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
@@ -748,6 +748,53 @@ it('should replace all links in .html file once', function (cb) {
         assert.equal(fileCount, 1, 'Only one file should pass through the stream');
         cb();
     });
+
+    stream.end();
+});
+*/
+
+// test concat static resource, like convert '/js/??/com/a.js,b.js,c.js' -> '/js/??/com/a-[hash].js,b-[hash].js,c-[hash].js'
+it('should replace all concat-links which are wrapped in quotes', function (cb) {
+    var stream = revCollector({
+        concatPrefixes: {
+            '/js/??': '/js',
+            '/css/??': '/css'
+        }
+    });
+    var manifestData = JSON.stringify({
+        "js/com/script1.js": "js/com/script1-bcd227a67c.js",
+        "js/com/script2.js": "js/com/script2-6173da6e13.js",
+        "js/com/script3.js": "js/com/script3-abcdef1234.js"
+    });
+    var htmlHasConcatData = '<html><body>' +
+        '<!-- 123 --> <script src="${cdnUrl}/js/??/com/script1.js,/com/script2.js,/com/script3.js${qs}" type="application/javascript"></script>' +
+        '<!-- 23 --> <script src="/js/??/com/script2.js,/com/script3.js"></script>' +
+        '<!-- /*13*/ "/js/??/com/script1.js,/com/script3.js" -->' +
+        '<script>/*3120, 0 has not version*/ let a = `${aha}/js/??/com/script3.js,/com/script1.js,/com/script2.js,/com/script0.js`;</script>' +
+        '<script>/*12*/ $.get("/js/??/com/script1.js,/com/script2.js", callback);</script>' +
+        '</body></html>';
+    stream.write(new gutil.File({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(manifestData)
+    }));
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(htmlHasConcatData)
+    }));
+    stream.on('data', function (file) {
+        var contents = file.contents.toString();
+        assert(
+            !/\/js\/com\/script3\.js/.test(contents),
+            'The concat path should be replaced'
+        );
+        assert(
+            /\/script3-abcdef1234\.js/.test(contents),
+            'The concat path should be correctly replaced'
+        );
+        // console.log(contents);
+    });
+
+    stream.on('end', cb);
 
     stream.end();
 });
