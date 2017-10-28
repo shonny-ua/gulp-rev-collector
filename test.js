@@ -31,7 +31,7 @@ var collectedManifestStandard = {
     'script1.js': 'script1-61e0be79.js',
     'script2.js': 'script2-a42f5380.js'
 };
-/*
+
 it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
@@ -751,7 +751,6 @@ it('should replace all links in .html file once', function (cb) {
 
     stream.end();
 });
-*/
 
 // test concat static resource, like convert '/js/??/com/a.js,b.js,c.js' -> '/js/??/com/a-[hash].js,b-[hash].js,c-[hash].js'
 it('should replace all concat-links which are wrapped in quotes', function (cb) {
@@ -789,6 +788,26 @@ it('should replace all concat-links which are wrapped in quotes', function (cb) 
         );
         assert(
             /\/script3-abcdef1234\.js/.test(contents),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            !~contents.indexOf('/js/??/com/script1.js,/com/script2.js,/com/script3.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            !~contents.indexOf('/js/??/com/script1.js,/com/script2.js,/com/script3.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            !~contents.indexOf('/js/??/com/script2.js,/com/script3.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            !~contents.indexOf('/js/??/com/script3.js,/com/script1.js,/com/script2.js,/com/script0.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            !~contents.indexOf('/js/??/com/script1.js,/com/script2.js'),
             'The concat path should be correctly replaced'
         );
         // console.log(contents);
