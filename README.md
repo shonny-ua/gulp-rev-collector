@@ -137,6 +137,8 @@ Such as:
 
 see concat-static-res-request information: [http-nginx-concat](https://github.com/alibaba/nginx-http-concat)
 
+> The concat static asserts must are wrapped in quotes.  **"**/js/??/com/a.js,/com/b.js,/com/c.js**"**
+
 ### Works with gulp-rev-collector
 
 - [gulp-rev](https://github.com/sindresorhus/gulp-rev)
