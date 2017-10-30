@@ -249,8 +249,8 @@ function replaceAllConcat(src, concatPrefixMap, changes){
         var concatPattern = cpfPattern + '(' + normalPathPettern + '+,' + normalPathPettern + '+)+[\'`"]';
         var concatRegEx = new RegExp(concatPattern, 'g');
         var concatArr = src.match(concatRegEx);
-        console.log('\nRegex:' + concatRegEx + '  Matched-length: ' + (concatArr && concatArr.length || 0));
-        concatArr && console.log(JSON.stringify(concatArr, null, 2));
+        // console.log('\nRegex:' + concatRegEx + '  Matched-length: ' + (concatArr && concatArr.length || 0));
+        // concatArr && console.log(JSON.stringify(concatArr, null, 2));
         if(concatArr && concatArr.length){
             // format & unique
             concatArr = _.uniq(concatArr.map(function(s){
@@ -260,8 +260,8 @@ function replaceAllConcat(src, concatPrefixMap, changes){
             concatArr.sort(function(a, b){
                 return b.length - a.length;
             });
-            console.log('After: Format & Unique & Sort:  Format-length: ' + concatArr.length);
-            console.log(JSON.stringify(concatArr, null, 2));
+            // console.log('After: Format & Unique & Sort:  Format-length: ' + concatArr.length);
+            // console.log(JSON.stringify(concatArr, null, 2));
 
             concatArr.forEach(function(s){
                 var cRevInfo = getConcatRevInfo(s, {
@@ -270,10 +270,10 @@ function replaceAllConcat(src, concatPrefixMap, changes){
                     changes: changes
                 });
                 if(cRevInfo.regexp){
-                    console.log(cRevInfo.regexp + '  ->  ' + cRevInfo.replacement);
+                    // console.log(cRevInfo.regexp + '  ->  ' + cRevInfo.replacement);
                     src = src.replace(cRevInfo.regexp, cRevInfo.replacement);
                 }else{
-                    console.log('Skip replace: ' + s);
+                    // console.log('Skip replace: ' + s);
                 }
             });
         }

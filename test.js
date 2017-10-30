@@ -782,14 +782,17 @@ it('should replace all concat-links which are wrapped in quotes', function (cb) 
     }));
     stream.on('data', function (file) {
         var contents = file.contents.toString();
+
         assert(
             !/\/js\/com\/script3\.js/.test(contents),
             'The concat path should be replaced'
         );
+
         assert(
             /\/script3-abcdef1234\.js/.test(contents),
             'The concat path should be correctly replaced'
         );
+
         assert(
             !~contents.indexOf('/js/??/com/script1.js,/com/script2.js,/com/script3.js'),
             'The concat path should be correctly replaced'
@@ -808,6 +811,27 @@ it('should replace all concat-links which are wrapped in quotes', function (cb) 
         );
         assert(
             !~contents.indexOf('/js/??/com/script1.js,/com/script2.js'),
+            'The concat path should be correctly replaced'
+        );
+
+        assert(
+            ~contents.indexOf('/js/??/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js,/com/script3-abcdef1234.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            ~contents.indexOf('/js/??/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js,/com/script3-abcdef1234.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            ~contents.indexOf('/js/??/com/script2-6173da6e13.js,/com/script3-abcdef1234.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            ~contents.indexOf('/js/??/com/script3-abcdef1234.js,/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js,/com/script0.js'),
+            'The concat path should be correctly replaced'
+        );
+        assert(
+            ~contents.indexOf('/js/??/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js'),
             'The concat path should be correctly replaced'
         );
         // console.log(contents);
