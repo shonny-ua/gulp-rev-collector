@@ -119,6 +119,24 @@ Default value is:
 }
 ```
 
+#### concatPrefixes
+
+Type : 'Object'
+
+If you use some concat static path(for optimizing resource request reduction).
+
+You may need convert ```/js/??/com/a.js,/com/b.js,/com/c.js``` to ```/js/??/com/a-[revcode].js,/com/b-[revcode].js,/com/c-[revcode].js```
+
+Such as:
+```
+{
+    "/js/??": "/js",
+    "/css/??": "/css"
+}
+```
+
+see concat-static-res-request information: [http-nginx-concat](https://github.com/alibaba/nginx-http-concat)
+
 ### Works with gulp-rev-collector
 
 - [gulp-rev](https://github.com/sindresorhus/gulp-rev)
