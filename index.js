@@ -37,7 +37,7 @@ function _getManifestData(file, opts) {
                     isRev = 0;
                     return;
                 }
-                let cleanReplacement =  path.basename(json[key]).replace(new RegExp( opts.revSuffix ), '' );
+                var cleanReplacement =  path.basename(json[key]).replace(new RegExp( opts.revSuffix ), '' );
                 if (!~[
                         path.basename(key),
                         _mapExtnames(path.basename(key), opts)

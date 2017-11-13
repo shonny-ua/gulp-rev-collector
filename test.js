@@ -284,17 +284,18 @@ it('should generate correct collected manifest file, even if the map includes di
 });
 
 // https://github.com/shonny-ua/gulp-rev-collector/issues/32
-it('should generate correct collected manifest file, even if f the name of the JS file contains “-”', function (cb) {
+it('should generate correct collected manifest file, even if f the name of the JS or CSS file contains “-”', function (cb) {
     var stream = revCollector({
         // collectedManifest: 'collectedManifest.json'
     });
     var fileCount = 0;
     var revisionMap = {
-        "assets/js/com-mon.js": "assets/js/com-mon-2c0d21e40c.js"
+        "assets/js/com-mon.js": "assets/js/com-mon-2c0d21e40c.js",
+        "assets/css/a-c.css": "assets/css/a-c-12345678.css"
     };
 
-    var htmlFileBody        = '<html><head><script src="/assets/js/com-mon.js"></head><body><img src="cdn/image.gif" /></body></html>';
-    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon.js": "assets/js/common-2c0d21e40c.js"></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlFileBody        = '<html><head><script src="/assets/js/com-mon.js"><link rel="stylesheet" href="/assets/css/a-c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
     stream.write(new gutil.File({
         path: 'rev/css/rev-manifest.json',
@@ -319,8 +320,18 @@ it('should generate correct collected manifest file, even if f the name of the J
         );
 
         assert(
-            /assets\/js\/com-mon-2c0d21e40c.js/.test(contents),
+            !/assets\/css\/a-c\.css/.test(contents),
+            'The CSS file name should be replaced'
+        );
+
+        assert(
+            /assets\/js\/com-mon-2c0d21e40c\.js/.test(contents),
             'The JS file name should be correct replaced'
+        );
+
+        assert(
+            /assets\/css\/a-c-12345678\.css/.test(contents),
+            'The CSS file name should be correct replaced'
         );
 
         fileCount++;
@@ -626,6 +637,116 @@ it('should replace links in .html file with "dirReplacements"', function (cb) {
 
     stream.end();
 });
+
+// https://github.com/shonny-ua/gulp-rev-collector/issues/33
+it('should replace links in .html file with "dirReplacements" as a function', function (cb) {
+    var stream = revCollector({
+        replaceReved: true,
+        dirReplacements: {
+            '': function (manifest_value) {
+                return '//js.40017.cn/touch/hb/c/2/' + manifest_value;
+            }
+        }
+    });
+    var fileCount = 0;
+    var revisionMap = {
+        "js/util/util.js": "js/util/util-17b72c16ec.js"
+    };
+
+    var htmlFileBody        = '<html><head><script src="js/util/util.js"><link rel="stylesheet" href="/assets/css/a-c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+
+    stream.write(new gutil.File({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(JSON.stringify(revisionMap))
+    }));
+
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(htmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var contents = file.contents.toString('utf8');
+        var ext = path.extname(file.path);
+
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
+
+        assert(
+            !/js\/util\/util\.js/.test(contents),
+            'The JS file name should be replaced'
+        );
+
+        assert(
+            /\/\/js\.40017\.cn\/touch\/hb\/c\/2\/js\/util\/util-17b72c16ec\.js/.test(contents),
+            'The JS file name should be correct replaced'
+        );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
+
+// https://github.com/shonny-ua/gulp-rev-collector/issues/44
+it('should replace parts of concated links in .html file ', function (cb) {
+    var stream = revCollector({
+    });
+    var fileCount = 0;
+    var revisionMap = {
+        "a.js": "a-17b72c16ec.js",
+        "b.js": "b-2c0d21e40c.js",
+        "c.js": "c-ffffffffff.js"
+    };
+
+    var htmlFileBody        = '<html><head><script src="/js/??/com/a.js,/com/b.js,/com/c.js"></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+
+    stream.write(new gutil.File({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(JSON.stringify(revisionMap))
+    }));
+
+    stream.write(new gutil.File({
+        path: 'index.html',
+        contents: new Buffer(htmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var contents = file.contents.toString('utf8');
+        var ext = path.extname(file.path);
+
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
+
+        assert(
+            !/\/js\/\?\?\/com\/a\.js,\/com\/b\.js,\/com\/c\.js/.test(contents),
+            'The JS file name should be replaced'
+        );
+
+        assert(
+            /\/js\/\?\?\/com\/a-17b72c16ec\.js,\/com\/b-2c0d21e40c\.js,\/com\/c-ffffffffff\.js/.test(contents),
+            'The JS file name should be correct replaced'
+        );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
 
 it('should replace reved links in .html file with "revSuffix" and "replaceReved" param', function (cb) {
     var stream = revCollector({
