@@ -1,6 +1,6 @@
 'use strict';
 var assert              = require('assert');
-var gutil               = require('gulp-util');
+var Vinyl               = require('vinyl');
 var revCollector        = require('./index');
 var path                = require('path');
 var isEqual             = require('lodash.isequal');
@@ -36,22 +36,22 @@ it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
         contents: new Buffer(imgManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -116,12 +116,12 @@ it('should replace links in .html file wo params', function (cb) {
 it('should replace asset links which are not wrapped in quotes', function (cb) {
     var stream = revCollector();
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
         contents: new Buffer(imgManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(unquotedHtmlFileBody)
     }));
@@ -151,12 +151,12 @@ it('should generate correct collected manifest file', function (cb) {
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
@@ -193,12 +193,12 @@ it('should generate correct collected manifest file, even if the map includes di
     var htmlFileBody        = '<html><head><link rel="stylesheet" href="/assets/less/common.less" /></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/assets/css/common-2c0d21e40c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -245,12 +245,12 @@ it('should generate correct collected manifest file, even if the map includes di
     var htmlFileBody        = '<html><head><link rel="stylesheet" href="/assets/less/common.loss" /></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/assets/css/common-2c0d21e40c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -297,12 +297,12 @@ it('should generate correct collected manifest file, even if f the name of the J
     var htmlFileBody        = '<html><head><script src="/assets/js/com-mon.js"><link rel="stylesheet" href="/assets/css/a-c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -357,12 +357,12 @@ it('should generate correct collected manifest file, even if the map includes mu
         "maps/css/appless.max.less": "maps/css/appless-aaaaaaaaaa.max.css"
     };
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer('<sctipt src="maps/js/app-bbbbbbbbbb.js.map"></script><link rel="stylesheet" href="/maps/css/app-bbbbbbbbbb.min.css" /><link rel="stylesheet" href="/maps/css/appless-bbbbbbbbbb.max.css" />')
     }));
@@ -419,17 +419,17 @@ it('should match longer rev patterns before shorter ones', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssSortManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsSortManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlSortFileBody)
     }));
@@ -487,17 +487,17 @@ it('should replace reved links in .html file with "replaceReved" param', functio
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlRevedFileBody)
     }));
@@ -561,22 +561,22 @@ it('should replace links in .html file with "dirReplacements"', function (cb) {
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
         contents: new Buffer(imgManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -656,12 +656,12 @@ it('should replace links in .html file with "dirReplacements" as a function', fu
     var htmlFileBody        = '<html><head><script src="js/util/util.js"><link rel="stylesheet" href="/assets/css/a-c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -709,12 +709,12 @@ it('should replace parts of concated links in .html file ', function (cb) {
     var htmlFileBody        = '<html><head><script src="/js/??/com/a.js,/com/b.js,/com/c.js"></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -755,17 +755,17 @@ it('should replace reved links in .html file with "revSuffix" and "replaceReved"
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssSfxManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsSfxManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlSfxRevedFileBody)
     }));
@@ -821,12 +821,12 @@ it('should replace all links in .html file once', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(doubleCssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(doubleHtmlFileBody)
     }));

@@ -1,7 +1,7 @@
 'use strict';
 var _            = require('underscore');
-var gutil        = require('gulp-util');
-var PluginError  = gutil.PluginError;
+var PluginError  = require('plugin-error');
+var Vinyl        = require('vinyl');
 var through      = require('through2');
 var path         = require('path');
 
@@ -104,7 +104,7 @@ function revCollector(opts) {
 
         if (opts.collectedManifest) {
             this.push(
-                new gutil.File({
+                new Vinyl({
                     path: opts.collectedManifest,
                     contents: new Buffer(JSON.stringify(manifest, null, "\t"))
                 })
