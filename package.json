@@ -35,7 +35,6 @@
     "collector"
   ],
   "dependencies": {
-    "gulp-util": "^3.0.0",
     "plugin-error": "^0.1.2",
     "through2": ">=0.5.1",
     "underscore": "^1.6.0",
