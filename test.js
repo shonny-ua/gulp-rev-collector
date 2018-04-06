@@ -872,3 +872,71 @@ it('should replace all links in .html file once', function (cb) {
 
     stream.end();
 });
+
+it('should replace links in .html and .js file with "revSuffix" exotic placed', function (cb) {
+    var suffixPlaceManifestBody = '{"checked.directive.js": "checked-0a90e14b3d.directive.js"}';
+    var suffixPlaceHtmlFileBody = '<html><head><script src="/app/common/directives/checked.directive.js"></script></head><body></body></html>';
+    var suffixPlaceJsFileBody = 'var checked_directive_1 = require("./common/directives/checked.directive");';
+
+    var stream = revCollector({
+        extMap: {
+            '.directive.js': '.directive'
+        }
+    });
+    var fileCount = 0;
+
+    stream.write(new Vinyl({
+        path: 'rev/js/rev-manifest.json',
+        contents: new Buffer(suffixPlaceManifestBody)
+    }));
+
+    stream.write(new Vinyl({
+        path: 'index.html',
+        contents: new Buffer(suffixPlaceHtmlFileBody)
+    }));
+
+    stream.write(new Vinyl({
+        path: 'module.js',
+        contents: new Buffer(suffixPlaceJsFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var ext = path.extname(file.path);
+        var contents = file.contents.toString('utf8');
+
+        assert(~['.html', '.js'].indexOf(ext), 'Only html and js files should pass through the stream');
+
+        if ('.html' == ext) {
+            assert(
+                !/app\/common\/directives\/checked\.directive\.js/.test(contents),
+                'The JS file name should be replaced'
+            );
+
+            assert(
+                /app\/common\/directives\/checked-0a90e14b3d\.directive\.js/.test(contents),
+                'The JS file name should be correct replaced'
+            );
+        }
+
+        if ('.js' == ext) {
+            assert(
+                !/checked\.directive/.test(contents),
+                'The require file name should be replaced'
+            );
+
+            assert(
+                /checked-0a90e14b3d\.directive/.test(contents),
+                'The require file name should be correct replaced'
+            );
+        }
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 2, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});

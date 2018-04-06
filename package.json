@@ -1,6 +1,6 @@
 {
   "name": "gulp-rev-collector",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "Static asset revision data collector from manifests, generated from different streams, and replace their links in html template.",
   "license": "MIT",
   "repository": {
@@ -35,7 +35,6 @@
     "collector"
   ],
   "dependencies": {
-    "gulp-util": "^3.0.0",
     "plugin-error": "^0.1.2",
     "through2": ">=0.5.1",
     "underscore": "^1.6.0",
