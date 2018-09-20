@@ -54,7 +54,8 @@ gulp.task('rev', function () {
                 'cdn/': function(manifest_value) {
                     return '//cdn' + (Math.floor(Math.random() * 9) + 1) + '.' + 'exsample.dot' + '/img/' + manifest_value;
                 }
-            }
+            },
+            replaceShorterPatternsFirst: false
         }) )
         .pipe( minifyHTML({
                 empty:true,
@@ -76,7 +77,15 @@ It is a filename for collecded and merged manifest data in `json` format.
 
 Type : `Boolean`
 
-You set a flag, replaceReved, which will replace alredy replaced links in template's files. Default value is `false`.
+You set a flag, replaceReved, which will replace already replaced links in template's files. Default value is `false`.
+
+#### replaceShorterPatternsFirst
+
+Type : `Boolean`
+
+You set a flag, which will replace shorter patterns first. Default value is `false`.
+
+if there are two file have same name, eg:  '/image/my/bg.png' and  '/image/bg.png',  replaceShorterPatternsFirst set false will cause a problem that  those different files direct to same file, set true will solve it.
 
 #### dirReplacements
 
