@@ -9,7 +9,7 @@ var PLUGIN_NAME  = 'gulp-rev-collector';
 
 var defaults = {
     revSuffix: '-[0-9a-f]{8,10}-?',
-    onlineRev: true,
+    onlyRev: false,
     extMap: {
         '.scss': '.css',
         '.less': '.css',
@@ -140,7 +140,7 @@ function revCollector(opts) {
                             + patternExt
                         );
 
-                if(opts.onlineRev) {
+                if(opts.onlyRev) {
                     patterns.shift();
                 }
             }
