@@ -1,7 +1,7 @@
 'use strict';
 var _            = require('underscore');
-var gutil        = require('gulp-util');
-var PluginError  = gutil.PluginError;
+var PluginError  = require('plugin-error');
+var Vinyl        = require('vinyl');
 var through      = require('through2');
 var path         = require('path');
 
@@ -58,10 +58,10 @@ function _getManifestData(file, opts) {
 
 // Issue #30 extnames normalisation
 function _mapExtnames(filename, opts) {
-    var fileExt = path.extname(filename);
     Object.keys(opts.extMap).forEach(function (ext) {
-        if (fileExt === ext) {
-            filename = filename.replace(new RegExp( '\\' + ext + '$' ), opts.extMap[ext]);
+        var extPattern = new RegExp( escPathPattern(ext) + '$' );
+        if (extPattern.test(filename)) {
+            filename = filename.replace(extPattern, opts.extMap[ext]);
         }
     });
     return filename;
@@ -104,15 +104,24 @@ function revCollector(opts) {
 
         if (opts.collectedManifest) {
             this.push(
-                new gutil.File({
+                new Vinyl({
                     path: opts.collectedManifest,
                     contents: new Buffer(JSON.stringify(manifest, null, "\t"))
                 })
             );
         }
 
+        // Issue #50 extnames extended
+        Object.keys(manifest).forEach(function (key) {
+            var expMapedPattern = _mapExtnames(key, opts);
+            if (key != expMapedPattern && !~Object.keys(manifest).indexOf(expMapedPattern)) {
+                manifest[expMapedPattern] = _mapExtnames(manifest[key], opts);
+            }
+        });
+
         for (var key in manifest) {
             var patterns = [ escPathPattern(key) ];
+
             if (opts.replaceReved) {
                 var patternExt = path.extname(key);
                 if (patternExt in opts.extMap) {

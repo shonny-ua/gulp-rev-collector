@@ -1,6 +1,6 @@
 'use strict';
 var assert              = require('assert');
-var gutil               = require('gulp-util');
+var Vinyl               = require('vinyl');
 var revCollector        = require('./index');
 var path                = require('path');
 var isEqual             = require('lodash.isequal');
@@ -36,22 +36,22 @@ it('should replace links in .html file wo params', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
         contents: new Buffer(imgManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -116,12 +116,12 @@ it('should replace links in .html file wo params', function (cb) {
 it('should replace asset links which are not wrapped in quotes', function (cb) {
     var stream = revCollector();
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
         contents: new Buffer(imgManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(unquotedHtmlFileBody)
     }));
@@ -151,12 +151,12 @@ it('should generate correct collected manifest file', function (cb) {
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
@@ -193,12 +193,12 @@ it('should generate correct collected manifest file, even if the map includes di
     var htmlFileBody        = '<html><head><link rel="stylesheet" href="/assets/less/common.less" /></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/assets/css/common-2c0d21e40c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -245,12 +245,12 @@ it('should generate correct collected manifest file, even if the map includes di
     var htmlFileBody        = '<html><head><link rel="stylesheet" href="/assets/less/common.loss" /></head><body><img src="cdn/image.gif" /></body></html>';
     var htmlRevedFileBody   = '<html><head><link rel="stylesheet" href="/assets/css/common-2c0d21e40c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -284,24 +284,25 @@ it('should generate correct collected manifest file, even if the map includes di
 });
 
 // https://github.com/shonny-ua/gulp-rev-collector/issues/32
-it('should generate correct collected manifest file, even if f the name of the JS file contains “-”', function (cb) {
+it('should generate correct collected manifest file, even if f the name of the JS or CSS file contains “-”', function (cb) {
     var stream = revCollector({
         // collectedManifest: 'collectedManifest.json'
     });
     var fileCount = 0;
     var revisionMap = {
-        "assets/js/com-mon.js": "assets/js/com-mon-2c0d21e40c.js"
+        "assets/js/com-mon.js": "assets/js/com-mon-2c0d21e40c.js",
+        "assets/css/a-c.css": "assets/css/a-c-12345678.css"
     };
 
-    var htmlFileBody        = '<html><head><script src="/assets/js/com-mon.js"></head><body><img src="cdn/image.gif" /></body></html>';
-    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon.js": "assets/js/common-2c0d21e40c.js"></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlFileBody        = '<html><head><script src="/assets/js/com-mon.js"><link rel="stylesheet" href="/assets/css/a-c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -319,8 +320,18 @@ it('should generate correct collected manifest file, even if f the name of the J
         );
 
         assert(
-            /assets\/js\/com-mon-2c0d21e40c.js/.test(contents),
+            !/assets\/css\/a-c\.css/.test(contents),
+            'The CSS file name should be replaced'
+        );
+
+        assert(
+            /assets\/js\/com-mon-2c0d21e40c\.js/.test(contents),
             'The JS file name should be correct replaced'
+        );
+
+        assert(
+            /assets\/css\/a-c-12345678\.css/.test(contents),
+            'The CSS file name should be correct replaced'
         );
 
         fileCount++;
@@ -346,12 +357,12 @@ it('should generate correct collected manifest file, even if the map includes mu
         "maps/css/appless.max.less": "maps/css/appless-aaaaaaaaaa.max.css"
     };
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(JSON.stringify(revisionMap))
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer('<sctipt src="maps/js/app-bbbbbbbbbb.js.map"></script><link rel="stylesheet" href="/maps/css/app-bbbbbbbbbb.min.css" /><link rel="stylesheet" href="/maps/css/appless-bbbbbbbbbb.max.css" />')
     }));
@@ -408,17 +419,17 @@ it('should match longer rev patterns before shorter ones', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssSortManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsSortManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlSortFileBody)
     }));
@@ -476,17 +487,17 @@ it('should replace reved links in .html file with "replaceReved" param', functio
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlRevedFileBody)
     }));
@@ -550,22 +561,22 @@ it('should replace links in .html file with "dirReplacements"', function (cb) {
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
         contents: new Buffer(imgManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlFileBody)
     }));
@@ -627,6 +638,116 @@ it('should replace links in .html file with "dirReplacements"', function (cb) {
     stream.end();
 });
 
+// https://github.com/shonny-ua/gulp-rev-collector/issues/33
+it('should replace links in .html file with "dirReplacements" as a function', function (cb) {
+    var stream = revCollector({
+        replaceReved: true,
+        dirReplacements: {
+            '': function (manifest_value) {
+                return '//js.40017.cn/touch/hb/c/2/' + manifest_value;
+            }
+        }
+    });
+    var fileCount = 0;
+    var revisionMap = {
+        "js/util/util.js": "js/util/util-17b72c16ec.js"
+    };
+
+    var htmlFileBody        = '<html><head><script src="js/util/util.js"><link rel="stylesheet" href="/assets/css/a-c.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+
+    stream.write(new Vinyl({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(JSON.stringify(revisionMap))
+    }));
+
+    stream.write(new Vinyl({
+        path: 'index.html',
+        contents: new Buffer(htmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var contents = file.contents.toString('utf8');
+        var ext = path.extname(file.path);
+
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
+
+        assert(
+            !/js\/util\/util\.js/.test(contents),
+            'The JS file name should be replaced'
+        );
+
+        assert(
+            /\/\/js\.40017\.cn\/touch\/hb\/c\/2\/js\/util\/util-17b72c16ec\.js/.test(contents),
+            'The JS file name should be correct replaced'
+        );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
+
+// https://github.com/shonny-ua/gulp-rev-collector/issues/44
+it('should replace parts of concated links in .html file ', function (cb) {
+    var stream = revCollector({
+    });
+    var fileCount = 0;
+    var revisionMap = {
+        "a.js": "a-17b72c16ec.js",
+        "b.js": "b-2c0d21e40c.js",
+        "c.js": "c-ffffffffff.js"
+    };
+
+    var htmlFileBody        = '<html><head><script src="/js/??/com/a.js,/com/b.js,/com/c.js"></head><body><img src="cdn/image.gif" /></body></html>';
+    var htmlRevedFileBody   = '<html><head><script src="/assets/js/com-mon-2c0d21e40c.js"><link rel="stylesheet" href="/assets/css/a-c-12345678.css" /></head><body><img src="cdn/image.gif" /></body></html>';
+
+    stream.write(new Vinyl({
+        path: 'rev/css/rev-manifest.json',
+        contents: new Buffer(JSON.stringify(revisionMap))
+    }));
+
+    stream.write(new Vinyl({
+        path: 'index.html',
+        contents: new Buffer(htmlFileBody)
+    }));
+
+    stream.on('data', function (file) {
+        var fpath = file.path;
+        var contents = file.contents.toString('utf8');
+        var ext = path.extname(file.path);
+
+        assert.equal(ext, '.html', 'Only html files should pass through the stream');
+
+        assert(
+            !/\/js\/\?\?\/com\/a\.js,\/com\/b\.js,\/com\/c\.js/.test(contents),
+            'The JS file name should be replaced'
+        );
+
+        assert(
+            /\/js\/\?\?\/com\/a-17b72c16ec\.js,\/com\/b-2c0d21e40c\.js,\/com\/c-ffffffffff\.js/.test(contents),
+            'The JS file name should be correct replaced'
+        );
+
+        fileCount++;
+    });
+
+    stream.on('end', function() {
+        assert.equal(fileCount, 1, 'Only one file should pass through the stream');
+        cb();
+    });
+
+    stream.end();
+});
+
+
 it('should replace reved links in .html file with "revSuffix" and "replaceReved" param', function (cb) {
     var stream = revCollector({
         replaceReved: true,
@@ -634,17 +755,17 @@ it('should replace reved links in .html file with "revSuffix" and "replaceReved"
     });
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(cssSfxManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
         contents: new Buffer(jsSfxManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(htmlSfxRevedFileBody)
     }));
@@ -700,12 +821,12 @@ it('should replace all links in .html file once', function (cb) {
     var stream = revCollector();
     var fileCount = 0;
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
         contents: new Buffer(doubleCssManifestBody)
     }));
 
-    stream.write(new gutil.File({
+    stream.write(new Vinyl({
         path: 'index.html',
         contents: new Buffer(doubleHtmlFileBody)
     }));
@@ -752,92 +873,70 @@ it('should replace all links in .html file once', function (cb) {
     stream.end();
 });
 
-// test concat static resource, like convert '/js/??/com/a.js,b.js,c.js' -> '/js/??/com/a-[hash].js,b-[hash].js,c-[hash].js'
-it('should replace all concat-links which are wrapped in quotes', function (cb) {
+it('should replace links in .html and .js file with "revSuffix" exotic placed', function (cb) {
+    var suffixPlaceManifestBody = '{"checked.directive.js": "checked-0a90e14b3d.directive.js"}';
+    var suffixPlaceHtmlFileBody = '<html><head><script src="/app/common/directives/checked.directive.js"></script></head><body></body></html>';
+    var suffixPlaceJsFileBody = 'var checked_directive_1 = require("./common/directives/checked.directive");';
+
     var stream = revCollector({
-        concatPrefixes: {
-            '/js/??': '/js',
-            '/css/??': '/css'
+        extMap: {
+            '.directive.js': '.directive'
         }
     });
-    var manifestData = JSON.stringify({
-        "js/com/script1.js": "js/com/script1-bcd227a67c.js",
-        "js/com/script2.js": "js/com/script2-6173da6e13.js",
-        "js/com/script3.js": "js/com/script3-abcdef1234.js"
-    });
-    var htmlHasConcatData = '<html><body>' +
-        '<!-- 123 --> <script src="${cdnUrl}/js/??/com/script1.js,/com/script2.js,/com/script3.js${qs}" type="application/javascript"></script>' +
-        '<!-- 23 --> <script src="/js/??/com/script2.js,/com/script3.js"></script>' +
-        '<!-- /*13*/ "/js/??/com/script1.js,/com/script3.js" -->' +
-        '<script>/*3120, 0 has not version*/ let a = `${aha}/js/??/com/script3.js,/com/script1.js,/com/script2.js,/com/script0.js`;</script>' +
-        '<script>/*12*/ $.get("/js/??/com/script1.js,/com/script2.js", callback);</script>' +
-        '</body></html>';
-    stream.write(new gutil.File({
-        path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(manifestData)
+    var fileCount = 0;
+
+    stream.write(new Vinyl({
+        path: 'rev/js/rev-manifest.json',
+        contents: new Buffer(suffixPlaceManifestBody)
     }));
-    stream.write(new gutil.File({
+
+    stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlHasConcatData)
+        contents: new Buffer(suffixPlaceHtmlFileBody)
     }));
+
+    stream.write(new Vinyl({
+        path: 'module.js',
+        contents: new Buffer(suffixPlaceJsFileBody)
+    }));
+
     stream.on('data', function (file) {
-        var contents = file.contents.toString();
+        var ext = path.extname(file.path);
+        var contents = file.contents.toString('utf8');
 
-        assert(
-            !/\/js\/com\/script3\.js/.test(contents),
-            'The concat path should be replaced'
-        );
+        assert(~['.html', '.js'].indexOf(ext), 'Only html and js files should pass through the stream');
 
-        assert(
-            /\/script3-abcdef1234\.js/.test(contents),
-            'The concat path should be correctly replaced'
-        );
+        if ('.html' == ext) {
+            assert(
+                !/app\/common\/directives\/checked\.directive\.js/.test(contents),
+                'The JS file name should be replaced'
+            );
 
-        assert(
-            !~contents.indexOf('/js/??/com/script1.js,/com/script2.js,/com/script3.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            !~contents.indexOf('/js/??/com/script1.js,/com/script2.js,/com/script3.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            !~contents.indexOf('/js/??/com/script2.js,/com/script3.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            !~contents.indexOf('/js/??/com/script3.js,/com/script1.js,/com/script2.js,/com/script0.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            !~contents.indexOf('/js/??/com/script1.js,/com/script2.js'),
-            'The concat path should be correctly replaced'
-        );
+            assert(
+                /app\/common\/directives\/checked-0a90e14b3d\.directive\.js/.test(contents),
+                'The JS file name should be correct replaced'
+            );
+        }
 
-        assert(
-            ~contents.indexOf('/js/??/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js,/com/script3-abcdef1234.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            ~contents.indexOf('/js/??/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js,/com/script3-abcdef1234.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            ~contents.indexOf('/js/??/com/script2-6173da6e13.js,/com/script3-abcdef1234.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            ~contents.indexOf('/js/??/com/script3-abcdef1234.js,/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js,/com/script0.js'),
-            'The concat path should be correctly replaced'
-        );
-        assert(
-            ~contents.indexOf('/js/??/com/script1-bcd227a67c.js,/com/script2-6173da6e13.js'),
-            'The concat path should be correctly replaced'
-        );
-        // console.log(contents);
+        if ('.js' == ext) {
+            assert(
+                !/checked\.directive/.test(contents),
+                'The require file name should be replaced'
+            );
+
+            assert(
+                /checked-0a90e14b3d\.directive/.test(contents),
+                'The require file name should be correct replaced'
+            );
+        }
+
+        fileCount++;
     });
 
-    stream.on('end', cb);
+    stream.on('end', function() {
+        assert.equal(fileCount, 2, 'Only one file should pass through the stream');
+        cb();
+    });
 
     stream.end();
 });
