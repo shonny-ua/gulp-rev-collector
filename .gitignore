@@ -25,4 +25,4 @@ build/Release
 node_modules
 
 # IDE config files (jetbrain: idea,webstorm,phpstorm...)
- .idea/
+.idea/

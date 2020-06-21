@@ -184,12 +184,23 @@ function revCollector(opts) {
                 return b.patternLength - a.patternLength;
             }
         );
+
+        // concat path config
+        var concatPrefixes = _.isObject(opts.concatPrefixes) ? opts.concatPrefixes : false;
+        var concatPrefixMap = getConcatPrefixMap(concatPrefixes);
+
         mutables.forEach(function (file){
             if (!file.isNull()) {
                 var src = file.contents.toString('utf8');
                 changes.forEach(function (r) {
                     src = src.replace(r.regexp, r.replacement);
                 });
+
+                // deal concat path
+                if(concatPrefixMap && concatPrefixMap.length){
+                    src = replaceAllConcat(src, concatPrefixMap, changes);
+                }
+
                 file.contents = new Buffer(src);
             }
             this.push(file);
@@ -197,6 +208,137 @@ function revCollector(opts) {
 
         cb();
     });
+}
+
+/**
+ * getConcatPrefixMap
+ * @param {object} concatPrefixes
+ * @return {[{k: string, v: string}]}
+ */
+function getConcatPrefixMap(concatPrefixes){
+    var arr = [];
+    if(_.isObject(concatPrefixes)){
+        arr = Object.keys(concatPrefixes).map(function(k){
+            return {
+                k: k,
+                v: concatPrefixes[k]
+            };
+        });
+        arr.length && arr.sort(function(a, b){
+            return b.length -a.length;
+        });
+    }
+    return arr;
+}
+
+/**
+ * replaceAllConcat
+ * @param {string} src
+ * @param {array} concatPrefixMap
+ * @param {array} changes
+ * @returns {string}
+ */
+function replaceAllConcat(src, concatPrefixMap, changes){
+    if(!_.isString(src) || !(_.isArray(concatPrefixMap) && concatPrefixMap.length) || !_.isArray(changes)){
+        return src;
+    }
+    // url path doesn't include quotes & space inner :
+    //  [√] js/a/b/c.js
+    //  [×] js/'a/"b/c.js
+    //  [×] js/  a/b/c.js
+    var normalPathPettern = '[^\\f\\n\\r\\t\\v\'"`]';
+    concatPrefixMap.forEach(function(cpfObj){
+        var cpfKey = cpfObj.k;
+        var cpfValue = cpfObj.v;
+        if(!_.isString(cpfKey) || !_.isString(cpfValue)){
+            return false;
+        }
+        var cpfPattern = escPathPattern(cpfKey);
+        // start with prefix and end with quotes
+        var concatPattern = cpfPattern + '(' + normalPathPettern + '+,' + normalPathPettern + '+)+[\'`"]';
+        var concatRegEx = new RegExp(concatPattern, 'g');
+        var concatArr = src.match(concatRegEx);
+        // console.log('\nRegex:' + concatRegEx + '  Matched-length: ' + (concatArr && concatArr.length || 0));
+        // concatArr && console.log(JSON.stringify(concatArr, null, 2));
+        if(concatArr && concatArr.length){
+            // format & unique
+            concatArr = _.uniq(concatArr.map(function(s){
+                return s.replace(/(^['"`])|(['"`]$)/g, '').trim();
+            }));
+            // longer first
+            concatArr.sort(function(a, b){
+                return b.length - a.length;
+            });
+            // console.log('After: Format & Unique & Sort:  Format-length: ' + concatArr.length);
+            // console.log(JSON.stringify(concatArr, null, 2));
+
+            concatArr.forEach(function(s){
+                var cRevInfo = getConcatRevInfo(s, {
+                    cpfKey: cpfKey,
+                    cpfValue: cpfValue,
+                    changes: changes
+                });
+                if(cRevInfo.regexp){
+                    // console.log(cRevInfo.regexp + '  ->  ' + cRevInfo.replacement);
+                    src = src.replace(cRevInfo.regexp, cRevInfo.replacement);
+                }else{
+                    // console.log('Skip replace: ' + s);
+                }
+            });
+        }
+    });
+    return src;
+}
+
+/**
+ *
+ * @param str
+ * @param opts
+ *        opts.cpfKey   {string}
+ *        opts.cpfValue {string}
+ *        opts.changes  {array}
+ * @returns {{regexp: RegExp|null, replacement: string}}
+ */
+function getConcatRevInfo(str, opts){
+    opts = _.isObject(opts) ? opts : {};
+    var cpfKey = opts.cpfKey || '';
+    var cpfValue = opts.cpfValue || '';
+    var changes = opts.changes || [];
+    if(!_.isString(cpfKey) || !_.isString(cpfKey) || !(_.isArray(changes) && changes.length)){
+        return {
+            regexp: null,
+            replacement: str
+        };
+    }
+    var _str = str.replace(/['"`]$/g, '').trim();
+    var res = {
+        regexp: new RegExp(escPathPattern(_str), 'g'),
+        replacement: _str
+    };
+    var cpfPattern = escPathPattern(cpfKey);
+    res.replacement = _str.split(',').map(function(s, i){
+        var _s;
+        // 'add-prefix': add prefix to path (set complete path to reversion)
+        var isFirst = 0 === i;
+        if(isFirst){
+            _s = s.replace(new RegExp(cpfPattern, 'g'), cpfValue);
+        }else{
+            _s = cpfValue + s;
+        }
+        // 'rev-name': reversion name in complete path after 'add-prefix'
+        changes.forEach(function (r) {
+            _s = _s.replace(r.regexp, r.replacement);
+        });
+        // 'delete-prefix': delete prefix from path
+        var delStart = isFirst ? cpfKey : '';
+        var cpfvPtn = escPathPattern(cpfValue);
+        _s = _s.replace(new RegExp(cpfvPtn, 'g'), delStart);
+        return _s;
+    }).join(',');
+    if(res.replacement === _str){
+        res.regexp = null;
+    }
+    return res;
 }
 
 module.exports = revCollector;
