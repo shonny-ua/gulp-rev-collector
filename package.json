@@ -19,7 +19,7 @@
     "test": "mocha"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=0.10.0"
   },
   "keywords": [
     "gulpplugin",
