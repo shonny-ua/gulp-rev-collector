@@ -38,22 +38,22 @@ it('should replace links in .html file wo params', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(cssManifestBody)
+        contents: Buffer.from(cssManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(jsManifestBody)
+        contents: Buffer.from(jsManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
-        contents: new Buffer(imgManifestBody)
+        contents: Buffer.from(imgManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -118,12 +118,12 @@ it('should replace asset links which are not wrapped in quotes', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
-        contents: new Buffer(imgManifestBody)
+        contents: Buffer.from(imgManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(unquotedHtmlFileBody)
+        contents: Buffer.from(unquotedHtmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -153,12 +153,12 @@ it('should generate correct collected manifest file', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(cssManifestBody)
+        contents: Buffer.from(cssManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(jsManifestBody)
+        contents: Buffer.from(jsManifestBody)
     }));
 
     stream.on('data', function (file) {
@@ -195,12 +195,12 @@ it('should generate correct collected manifest file, even if the map includes di
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(JSON.stringify(revisionMap))
+        contents: Buffer.from(JSON.stringify(revisionMap))
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -247,12 +247,12 @@ it('should generate correct collected manifest file, even if the map includes di
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(JSON.stringify(revisionMap))
+        contents: Buffer.from(JSON.stringify(revisionMap))
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -299,12 +299,12 @@ it('should generate correct collected manifest file, even if f the name of the J
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(JSON.stringify(revisionMap))
+        contents: Buffer.from(JSON.stringify(revisionMap))
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -359,12 +359,12 @@ it('should generate correct collected manifest file, even if the map includes mu
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(JSON.stringify(revisionMap))
+        contents: Buffer.from(JSON.stringify(revisionMap))
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer('<sctipt src="maps/js/app-bbbbbbbbbb.js.map"></script><link rel="stylesheet" href="/maps/css/app-bbbbbbbbbb.min.css" /><link rel="stylesheet" href="/maps/css/appless-bbbbbbbbbb.max.css" />')
+        contents: Buffer.from('<sctipt src="maps/js/app-bbbbbbbbbb.js.map"></script><link rel="stylesheet" href="/maps/css/app-bbbbbbbbbb.min.css" /><link rel="stylesheet" href="/maps/css/appless-bbbbbbbbbb.max.css" />')
     }));
 
     stream.on('data', function (file) {
@@ -421,17 +421,17 @@ it('should match longer rev patterns before shorter ones', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(cssSortManifestBody)
+        contents: Buffer.from(cssSortManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(jsSortManifestBody)
+        contents: Buffer.from(jsSortManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlSortFileBody)
+        contents: Buffer.from(htmlSortFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -489,17 +489,17 @@ it('should replace reved links in .html file with "replaceReved" param', functio
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(cssManifestBody)
+        contents: Buffer.from(cssManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(jsManifestBody)
+        contents: Buffer.from(jsManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlRevedFileBody)
+        contents: Buffer.from(htmlRevedFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -563,22 +563,22 @@ it('should replace links in .html file with "dirReplacements"', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(cssManifestBody)
+        contents: Buffer.from(cssManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(jsManifestBody)
+        contents: Buffer.from(jsManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/img/rev-manifest.json',
-        contents: new Buffer(imgManifestBody)
+        contents: Buffer.from(imgManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -658,12 +658,12 @@ it('should replace links in .html file with "dirReplacements" as a function', fu
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(JSON.stringify(revisionMap))
+        contents: Buffer.from(JSON.stringify(revisionMap))
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -711,12 +711,12 @@ it('should replace parts of concated links in .html file ', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(JSON.stringify(revisionMap))
+        contents: Buffer.from(JSON.stringify(revisionMap))
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlFileBody)
+        contents: Buffer.from(htmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -757,17 +757,17 @@ it('should replace reved links in .html file with "revSuffix" and "replaceReved"
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(cssSfxManifestBody)
+        contents: Buffer.from(cssSfxManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(jsSfxManifestBody)
+        contents: Buffer.from(jsSfxManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(htmlSfxRevedFileBody)
+        contents: Buffer.from(htmlSfxRevedFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -823,12 +823,12 @@ it('should replace all links in .html file once', function (cb) {
 
     stream.write(new Vinyl({
         path: 'rev/css/rev-manifest.json',
-        contents: new Buffer(doubleCssManifestBody)
+        contents: Buffer.from(doubleCssManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(doubleHtmlFileBody)
+        contents: Buffer.from(doubleHtmlFileBody)
     }));
 
     stream.on('data', function (file) {
@@ -887,17 +887,17 @@ it('should replace links in .html and .js file with "revSuffix" exotic placed', 
 
     stream.write(new Vinyl({
         path: 'rev/js/rev-manifest.json',
-        contents: new Buffer(suffixPlaceManifestBody)
+        contents: Buffer.from(suffixPlaceManifestBody)
     }));
 
     stream.write(new Vinyl({
         path: 'index.html',
-        contents: new Buffer(suffixPlaceHtmlFileBody)
+        contents: Buffer.from(suffixPlaceHtmlFileBody)
     }));
 
     stream.write(new Vinyl({
         path: 'module.js',
-        contents: new Buffer(suffixPlaceJsFileBody)
+        contents: Buffer.from(suffixPlaceJsFileBody)
     }));
 
     stream.on('data', function (file) {

@@ -106,7 +106,7 @@ function revCollector(opts) {
             this.push(
                 new Vinyl({
                     path: opts.collectedManifest,
-                    contents: new Buffer(JSON.stringify(manifest, null, "\t"))
+                    contents: Buffer.from(JSON.stringify(manifest, null, "\t"))
                 })
             );
         }
@@ -190,7 +190,7 @@ function revCollector(opts) {
                 changes.forEach(function (r) {
                     src = src.replace(r.regexp, r.replacement);
                 });
-                file.contents = new Buffer(src);
+                file.contents = Buffer.from(src);
             }
             this.push(file);
         }, this);
