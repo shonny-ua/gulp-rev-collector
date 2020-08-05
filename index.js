@@ -9,6 +9,7 @@ var PLUGIN_NAME  = 'gulp-rev-collector';
 
 var defaults = {
     revSuffix: '-[0-9a-f]{8,10}-?',
+    onlyRev: false,
     extMap: {
         '.scss': '.css',
         '.less': '.css',
@@ -138,43 +139,57 @@ function revCollector(opts) {
                                 .join('\\.')
                             + patternExt
                         );
+
+                if(opts.onlyRev) {
+                    patterns.shift();
+                }
             }
 
-            if ( dirReplacements.length ) {
-                dirReplacements.forEach(function (dirRule) {
-                    patterns.forEach(function (pattern) {
-                        changes.push({
-                            regexp: new RegExp(  dirRule.dirRX + pattern, 'g' ),
-                            patternLength: (dirRule.dirRX + pattern).length,
-                            replacement: _.isFunction(dirRule.dirRpl)
-                                            ? dirRule.dirRpl(manifest[key])
-                                            : closeDirBySep(dirRule.dirRpl) + manifest[key]
+            (function() {
+                var manifestValue = manifest[key];
+
+                if ( dirReplacements.length ) {
+                    dirReplacements.forEach(function (dirRule) {
+                        patterns.forEach(function(pattern) {
+                            changes.push({
+                                regexp: new RegExp( '(' + dirRule.dirRX + ')?' + pattern, 'g' ),
+                                patternLength: (dirRule.dirRX + pattern).length,
+                                replacement: function(r) {
+                                    if (_.isFunction(dirRule.dirRpl)) {
+                                        return dirRule.dirRpl(manifestValue);
+                                    } else if (new RegExp(dirRule.dirRX).test(r)) {
+                                        return closeDirBySep(dirRule.dirRpl) + manifestValue;
+                                    } else {
+                                        return manifestValue;
+                                    }
+                                }
+                            });
                         });
                     });
-                });
-            } else {
-                patterns.forEach(function (pattern) {
-                    // without dirReplacements we must leave asset filenames with prefixes in its original state
-                    var prefixDelim = '([\/\\\\\'"';
-                    // if dir part in pattern exists, all exsotoic symbols should be correct processed using dirReplacements
-                    if (/[\\\\\/]/.test(pattern)) {
-                        prefixDelim += '\(=';
-                    } else {
-                        if (!/[\(\)]/.test(pattern)) {
-                            prefixDelim += '\(';
+                } else {
+                    patterns.forEach(function (pattern) {
+                        // without dirReplacements we must leave asset filenames with prefixes in its original state
+                        var prefixDelim = '([\/\\\\\'"';
+                        // if dir part in pattern exists, all exsotoic symbols should be correct processed using dirReplacements
+                        if (/[\\\\\/]/.test(pattern)) {
+                            prefixDelim += '\(=';
+                        } else {
+                            if (!/[\(\)]/.test(pattern)) {
+                                prefixDelim += '\(';
+                            }
+                            if (!~pattern.indexOf('=')) {
+                                prefixDelim += '=';
+                            }
                         }
-                        if (!~pattern.indexOf('=')) {
-                            prefixDelim += '=';
-                        }
-                    }
-                    prefixDelim += '])';
-                    changes.push({
-                        regexp: new RegExp( prefixDelim + pattern, 'g' ),
-                        patternLength: pattern.length,
-                        replacement: '$1' + manifest[key]
+                        prefixDelim += '])';
+                        changes.push({
+                            regexp: new RegExp( prefixDelim + pattern, 'g' ),
+                            patternLength: pattern.length,
+                            replacement: '$1' + manifest[key]
+                        });
                     });
-                });
-            }
+                }
+            })()
         }
 
         // Replace longer patterns first
