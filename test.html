@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title> 页面名称 </title>
+    <style type="text/css">
+        .borderView {
+            border: 5px gray solid;
+            float: left;
+            margin-left: 10px;
+            width: 50px;
+            height: 50px;
+        }
+        .qzView {
+            width: 30px;
+            height: 30px;
+            border-radius: 15px;
+            background-color: black;
+            position: absolute;
+            margin-top: 15px;
+        }
+
+    </style>
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+<div id="rule">
+    <div>规则说明</div>
+    <div>1.将左侧的四个红点和右侧的四个黑点调换位置即为胜利</div>
+    <div>2.红色的移动方向为右方，黑色为左方，即不可后退</div>
+    <div>3.每个棋子只可以按照自己的方向移动一个到空位或者跳一个到空位</div>
+    <div>4.点击某棋子如果可移动便会自动移动</div>
+</div>
+<div id="view" style="margin: 100px 0 0 100px; height: 100px">
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+    <div class="borderView"></div>
+
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+    <div class="qzView"></div>
+</div>
+<div id="tip" style="margin: 100px 0 0 100px">提示</div>
+<script type="text/javascript">
+    // 初始化棋盘布局
+    borderViews = $('.borderView');
+    allEnd = false;
+    function setQzView(borderIdx, qzIdx, color) {
+        borderView = $(borderViews[borderIdx]);
+        $($('.qzView')[qzIdx]).css({"left":borderView.offset().left + 15, "background-color":color});
+        $($('.qzView')[qzIdx]).attr({"flag": color, "posIdx": borderIdx})
+    }
+    function moveQzView(borderIdx, qzView) {
+        borderView = $(borderViews[borderIdx]);
+        qzView.css({"left":borderView.offset().left + 15});
+        qzView.attr({"posIdx": borderIdx})
+    }
+    function judgeSuccess() {
+        isend = true;
+        for (var i=0;i<borderViews.length-1;i++)
+        {
+            isRedFlag = -1;
+            idxFlag = $($('.qzView')[i]).attr("posIdx") - 4;
+            if ($($('.qzView')[i]).attr("flag") == "red") {
+                isRedFlag = 1;
+            }
+            if (isRedFlag * idxFlag <= 0) {
+                isend = false;
+                break;
+            }
+        }
+        if (isend) {
+            $('#tip').text("恭喜你获得胜利");
+            allEnd = true;
+        }
+    }
+    for (i=0;i<borderViews.length;i++)
+    {
+        if (i < 4) {
+            setQzView(i, i,  "red");
+        } else if (i > 4) {
+            setQzView(i, i-1, "black");
+        }
+    }
+    blankViewBorderIdx = 4;
+    $('.qzView').click(function (e) {
+        if (allEnd) {
+            return;
+        }
+        isRedFlag = -1;
+        curIdx = $(e.target).attr("posIdx");
+        if ($(e.target).attr("flag") == "red") {
+            isRedFlag = 1;
+        }
+        delPos = blankViewBorderIdx - curIdx;
+        if (Math.abs(delPos) < 3 && delPos * isRedFlag > 0) {
+            moveQzView(blankViewBorderIdx, $(e.target));
+            blankViewBorderIdx = curIdx;
+            $('#tip').text("移动成功");
+            judgeSuccess()
+        } else {
+            $('#tip').text("不可移动");
+        }
+    });
+
+</script>
+</body>
+</html>
